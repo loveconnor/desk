@@ -1,6 +1,6 @@
 # Connor Love — Experience
 
-An interactive 3D desk portfolio with a macOS-style desktop, résumé, projects, and music. Built with Vite, React, TypeScript, and Three.js for **experience.connorlove.com**.
+An interactive 3D desk portfolio with a macOS-style desktop, résumé, projects, and music. Built with Vite, React, TypeScript, and Three.js for **desk.connorlove.com**.
 
 ## Run
 
@@ -28,7 +28,7 @@ Deploy `dist/` to a static host. On Vercel, select the Vite preset.
 - `src/Application/World/PersonalDesk.ts` — desk, chair, and mouse
 - `public/resume/` — résumé PDF, LaTeX source, and preview image
 
-The browser app embeds `connorlove.com`; that site's headers must allow embedding from `experience.connorlove.com`.
+The browser app embeds `connorlove.com`; that site's headers must allow embedding from `desk.connorlove.com`.
 
 ## Check
 

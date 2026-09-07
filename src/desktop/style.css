@@ -948,11 +948,12 @@ strong {
 .browser > form {
   flex-shrink: 0;
 }
-.portfolio-frame {
-  display: block;
-  width: 100%;
+.browser-home {
   flex: 1;
   min-height: 0;
-  border: 0;
-  background: #f8e9cc;
+  overflow: auto;
+}
+.browser-home > img {
+  width: 80px;
+  height: 80px;
 }

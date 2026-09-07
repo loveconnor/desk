@@ -441,7 +441,6 @@ function Calculator() {
 function Browser() {
   const [address, setAddress] = useState(profile.website);
   const [url, setUrl] = useState(profile.website);
-  const [revision, setRevision] = useState(0);
   const navigate = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const input = event.currentTarget.querySelector("input")!;
@@ -458,7 +457,7 @@ function Browser() {
       input.setCustomValidity("");
       setUrl(destination.href);
       setAddress(destination.href);
-      setRevision((value) => value + 1);
+      window.open(destination.href, "_blank", "noopener,noreferrer");
     } catch {
       input.setCustomValidity("Enter a valid connorlove.com address.");
       input.reportValidity();
@@ -473,17 +472,9 @@ function Browser() {
           onClick={() => {
             setUrl(profile.website);
             setAddress(profile.website);
-            setRevision((value) => value + 1);
           }}
         >
           ⌂
-        </button>
-        <button
-          type="button"
-          aria-label="Reload website"
-          onClick={() => setRevision((value) => value + 1)}
-        >
-          <Arrow direction="reload" />
         </button>
         <input
           aria-label="Web address"
@@ -493,14 +484,17 @@ function Browser() {
             setAddress(event.target.value);
           }}
         />
-        <button type="submit">Go</button>
+        <button type="submit">Open in new tab</button>
       </form>
-      <iframe
-        key={revision}
-        className="portfolio-frame"
-        title="Connor Love — live website"
-        src={url}
-      />
+      <section className="browser-home">
+        <Icon id="browser" />
+        <h1>Connor Love’s portfolio</h1>
+        <p>Explore my work and projects on connorlove.com.</p>
+        <p>The live website opens in a new tab.</p>
+        <div className="browser-links">
+          <External href={url}>Open portfolio <Arrow /></External>
+        </div>
+      </section>
     </div>
   );
 }
