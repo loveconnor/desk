@@ -441,6 +441,7 @@ function Calculator() {
 function Browser() {
   const [address, setAddress] = useState(profile.website);
   const [url, setUrl] = useState(profile.website);
+  const [navigation, setNavigation] = useState(0);
   const navigate = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const input = event.currentTarget.querySelector("input")!;
@@ -457,7 +458,7 @@ function Browser() {
       input.setCustomValidity("");
       setUrl(destination.href);
       setAddress(destination.href);
-      window.open(destination.href, "_blank", "noopener,noreferrer");
+      setNavigation((value) => value + 1);
     } catch {
       input.setCustomValidity("Enter a valid connorlove.com address.");
       input.reportValidity();
@@ -472,6 +473,7 @@ function Browser() {
           onClick={() => {
             setUrl(profile.website);
             setAddress(profile.website);
+            setNavigation((value) => value + 1);
           }}
         >
           ⌂
@@ -484,17 +486,15 @@ function Browser() {
             setAddress(event.target.value);
           }}
         />
-        <button type="submit">Open in new tab</button>
+        <button type="submit">Go</button>
       </form>
-      <section className="browser-home">
-        <Icon id="browser" />
-        <h1>Connor Love’s portfolio</h1>
-        <p>Explore my work and projects on connorlove.com.</p>
-        <p>The live website opens in a new tab.</p>
-        <div className="browser-links">
-          <External href={url}>Open portfolio <Arrow /></External>
-        </div>
-      </section>
+      <iframe
+        key={navigation}
+        className="browser-page"
+        title="Connor Love’s portfolio"
+        src={url}
+        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
+      />
     </div>
   );
 }
