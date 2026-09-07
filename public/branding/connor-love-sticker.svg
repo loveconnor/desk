@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="220" viewBox="0 0 900 220">
+  <rect width="900" height="220" fill="#a7a7a5"/>
+  <rect x="3" y="3" width="894" height="214" rx="12" fill="#b3b3b0" stroke="#939390" stroke-width="3"/>
+  <g transform="translate(102 108)" fill="none" stroke="#30312f" stroke-width="7">
+    <circle r="65"/><ellipse rx="28" ry="65"/>
+    <path d="M-64 0H64M0-65V65M-54-35Q0-10 54-35M-54 35Q0 10 54 35"/>
+  </g>
+  <g fill="#30312f" font-family="Arial, Helvetica, sans-serif" font-style="italic">
+    <text x="200" y="106" font-size="86" font-weight="700" letter-spacing="1">Connor Love</text>
+    <text x="204" y="166" font-size="45">connorlove.com</text>
+  </g>
+</svg>
