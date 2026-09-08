@@ -16,6 +16,8 @@ const IFRAME_SIZE = {
 };
 
 export default class MonitorScreen extends EventEmitter {
+  movingSurfaces: THREE.Object3D[] = [];
+  appliedHeight = 0;
   application: Application;
   scene: THREE.Scene;
   cssScene: THREE.Scene;
@@ -231,6 +233,7 @@ export default class MonitorScreen extends EventEmitter {
 
     // Add to CSS scene
     this.cssScene.add(object);
+    this.movingSurfaces.push(object);
 
     // Create GL plane
     const material = new THREE.MeshBasicMaterial({
@@ -259,6 +262,7 @@ export default class MonitorScreen extends EventEmitter {
 
     // Add to gl scene
     this.scene.add(mesh);
+    this.movingSurfaces.push(mesh);
   }
 
   /**
@@ -375,6 +379,7 @@ export default class MonitorScreen extends EventEmitter {
     mesh.rotation.copy(this.rotation);
 
     this.scene.add(mesh);
+    this.movingSurfaces.push(mesh);
   }
 
   /**
@@ -441,6 +446,7 @@ export default class MonitorScreen extends EventEmitter {
     mesh.rotation.copy(plane.rotation);
 
     this.scene.add(mesh);
+    this.movingSurfaces.push(mesh);
   }
 
   createPerspectiveDimmer(maxOffset: number) {
@@ -470,6 +476,7 @@ export default class MonitorScreen extends EventEmitter {
     this.dimmingPlane = mesh;
 
     this.scene.add(mesh);
+    this.movingSurfaces.push(mesh);
   }
 
   /**
@@ -486,6 +493,11 @@ export default class MonitorScreen extends EventEmitter {
   }
 
   update() {
+    const height = this.application.world.computerSetup.lift.height;
+    const delta = height - this.appliedHeight;
+    for (const surface of this.movingSurfaces) surface.position.y += delta;
+    this.position.y = 950 + height;
+    this.appliedHeight = height;
     if (this.dimmingPlane) {
       const planeNormal = new THREE.Vector3(0, 0, 1);
       const viewVector = new THREE.Vector3();

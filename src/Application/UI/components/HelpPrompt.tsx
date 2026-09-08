@@ -32,15 +32,20 @@ const HelpPrompt: React.FC<HelpPromptProps> = () => {
   // make a document listener to listen to clicks
 
   useEffect(() => {
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       typeHelpText(0, "");
     }, 500);
-    document.addEventListener("mousedown", () => {
-      setVisible(false);
-    });
-    UIEventBus.on("enterMonitor", () => {
-      setVisible(false);
-    });
+    const hide = () => setVisible(false);
+    document.addEventListener("mousedown", hide);
+    document.addEventListener("enterMonitor", hide);
+    document.addEventListener("inspectRoomObject", hide);
+    return () => {
+      clearTimeout(timer);
+      visRef.current = false;
+      document.removeEventListener("mousedown", hide);
+      document.removeEventListener("enterMonitor", hide);
+      document.removeEventListener("inspectRoomObject", hide);
+    };
   }, []);
 
   useEffect(() => {

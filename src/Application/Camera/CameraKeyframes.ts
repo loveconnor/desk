@@ -19,23 +19,27 @@ export class CameraKeyframeInstance {
 
 const keys: { [key in CameraKey]: CameraKeyframe } = {
   idle: {
-    position: new THREE.Vector3(-6500, 6200, 7600),
-    focalPoint: new THREE.Vector3(0, -400, 400),
+    position: new THREE.Vector3(-6500, 5000, 7500),
+    focalPoint: new THREE.Vector3(0, -400, 200),
   },
   monitor: {
     position: new THREE.Vector3(0, 950, 2000),
     focalPoint: new THREE.Vector3(0, 950, 0),
   },
   desk: {
-    position: new THREE.Vector3(0, 1800, 5500),
+    position: new THREE.Vector3(0, 1100, 4000),
     focalPoint: new THREE.Vector3(0, 500, 0),
   },
   loading: {
-    position: new THREE.Vector3(-35000, 35000, 35000),
-    focalPoint: new THREE.Vector3(0, -5000, 0),
+    position: new THREE.Vector3(-6150, 500, 23200),
+    focalPoint: new THREE.Vector3(-6550, -160, 16135),
+  },
+  entry: {
+    position: new THREE.Vector3(-6550, 400, 14100),
+    focalPoint: new THREE.Vector3(-4500, 0, 6500),
   },
   orbitControlsStart: {
-    position: new THREE.Vector3(-6500, 4400, 6500),
+    position: new THREE.Vector3(-2200, 1400, 3200),
     focalPoint: new THREE.Vector3(-100, 350, 0),
   },
 };
@@ -56,6 +60,8 @@ export class MonitorKeyframe extends CameraKeyframeInstance {
   }
 
   update() {
+    this.focalPoint.y =
+      950 + (this.application.world?.computerSetup?.lift?.height ?? 0);
     const aspect = this.sizes.height / this.sizes.width;
     this.targetPos.z =
       Math.max(1012, 1800 * aspect) /
@@ -63,6 +69,7 @@ export class MonitorKeyframe extends CameraKeyframeInstance {
       260 +
       180;
     this.position.copy(this.targetPos);
+    this.position.y += this.application.world?.computerSetup?.lift?.height ?? 0;
   }
 }
 
@@ -95,20 +102,31 @@ export class DeskKeyframe extends CameraKeyframeInstance {
   }
 
   update() {
-    this.targetFoc.x +=
-      (this.mouse.x - this.sizes.width / 2 - this.targetFoc.x) * 0.05;
-    this.targetFoc.y +=
-      (-(this.mouse.y - this.sizes.height) - this.targetFoc.y) * 0.05;
-
-    this.targetPos.x +=
-      (this.mouse.x - this.sizes.width / 2 - this.targetPos.x) * 0.025;
-    this.targetPos.y +=
-      (-(this.mouse.y - this.sizes.height * 2) - this.targetPos.y) * 0.025;
-
-    const aspect = this.sizes.height / this.sizes.width;
-    this.targetPos.z = this.origin.z + aspect * 3000 - 1800;
+    // Keep the close camera inside the room, with bounded pointer parallax.
+    const pointerX = Math.max(
+      -1,
+      Math.min(1, (this.mouse.x / this.sizes.width) * 2 - 1),
+    );
+    const pointerY = Math.max(
+      -1,
+      Math.min(1, (this.mouse.y / this.sizes.height) * 2 - 1),
+    );
+    this.targetFoc.lerp(
+      new THREE.Vector3(pointerX * 160, 650 - pointerY * 100, 0),
+      0.05,
+    );
+    this.targetPos.lerp(
+      new THREE.Vector3(
+        pointerX * 180,
+        this.origin.y - pointerY * 120,
+        this.origin.z,
+      ),
+      0.025,
+    );
 
     this.focalPoint.copy(this.targetFoc);
+    this.focalPoint.y +=
+      this.application.world?.computerSetup?.lift?.height ?? 0;
     this.position.copy(this.targetPos);
   }
 }
@@ -125,13 +143,12 @@ export class IdleKeyframe extends CameraKeyframeInstance {
   }
 
   update() {
-    this.position.x =
-      Math.sin((this.time.elapsed + 19000) * 0.00008) * this.origin.x;
-    this.position.y =
-      Math.sin((this.time.elapsed + 1000) * 0.000004) * 4000 +
-      this.origin.y -
-      3000;
-    this.position.z = this.position.z;
+    // Elevated three-quarter view, surrounded by the extended room.
+    this.position.set(
+      this.origin.x + Math.sin(this.time.elapsed * 0.00008) * 65,
+      this.origin.y,
+      this.origin.z,
+    );
   }
 }
 

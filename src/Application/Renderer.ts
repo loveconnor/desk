@@ -118,6 +118,10 @@ export default class Renderer {
 
     this.instance.render(this.scene, this.camera.instance);
     this.cssInstance.render(this.cssScene, this.camera.instance);
+    this.overlayInstance.domElement.style.visibility = this.camera
+      .inspectionActive
+      ? "hidden"
+      : "visible";
     this.overlayInstance.render(this.overlayScene, this.camera.instance);
     this.overlay.position.copy(this.camera.instance.position);
   }

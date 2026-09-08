@@ -108,20 +108,20 @@ const InfoOverlay: React.FC<InfoOverlayProps> = ({ visible }) => {
   }, [time]);
 
   return (
-    <div style={styles.wrapper}>
+    <div style={styles.wrapper} className="portfolio-info" data-desk-ui>
       {nameText !== "" && (
-        <div style={styles.container}>
+        <div className="portfolio-control portfolio-chip">
           <p>{nameText}</p>
         </div>
       )}
       {titleText !== "" && (
-        <div style={styles.container}>
+        <div className="portfolio-control portfolio-chip">
           <p>{titleText}</p>
         </div>
       )}
       {timeText !== "" && (
         <div style={styles.lastRow}>
-          <div style={Object.assign({}, styles.container, styles.lastRowChild)}>
+          <div className="portfolio-control portfolio-chip portfolio-time">
             <p>{timeText}</p>
           </div>
           {volumeVisible && (
@@ -171,7 +171,7 @@ const styles: StyleSheetCSS = {
     flexDirection: "row",
   },
   lastRowChild: {
-    marginRight: 4,
+    marginRight: 6,
   },
 };
 

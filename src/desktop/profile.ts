@@ -3,7 +3,7 @@ export const profile = {
   name: "Connor Love",
   role: "Freelance Web Developer",
   location: "Columbus, Ohio",
-  email: "loveconnor2005@gmail.com",
+  email: "connor@connorlove.com",
   github: "https://github.com/loveconnor",
   linkedin: "https://www.linkedin.com/in/loveconnor/",
   twitter: "https://twitter.com/cando145",

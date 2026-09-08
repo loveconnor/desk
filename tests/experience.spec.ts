@@ -66,7 +66,7 @@ test('desktop apps, window controls, personalization and keyboard unlocking work
   await page.getByLabel('Close calculator', { exact: true }).click();
   await page.getByLabel('Close terminal', { exact: true }).click();
   await about.getByRole('button', { name: 'Contact', exact: true }).click();
-  await expect(page.getByLabel('To', { exact: true })).toHaveValue('loveconnor2005@gmail.com');
+  await expect(page.getByLabel('To', { exact: true })).toHaveValue('connor@connorlove.com');
   await page.reload();
   await expect(page.locator('.desktop')).toHaveClass('desktop forest');
   await page.getByRole('button', { name: 'Launchpad', exact: true }).click();

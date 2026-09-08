@@ -54,6 +54,8 @@ export default class CoffeeSteam {
   }
 
   update() {
+    this.model.mesh.position.y =
+      505 + this.application.world.computerSetup.lift.height;
     this.model.material.uniforms.uTime.value = this.time.elapsed;
     this.model.mesh.quaternion.copy(
       this.application.camera.instance.quaternion,

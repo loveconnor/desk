@@ -22,6 +22,7 @@ export enum CameraKey {
   IDLE = "idle",
   MONITOR = "monitor",
   LOADING = "loading",
+  ENTRY = "entry",
   DESK = "desk",
   ORBIT_CONTROLS_START = "orbitControlsStart",
 }
@@ -38,6 +39,9 @@ export default class Camera extends EventEmitter {
   focalPoint: THREE.Vector3;
 
   paperActive = false;
+  inspectionActive = false;
+  private doorwayBusy = false;
+  private roomEntered = false;
   freeCam: boolean;
   orbitControls: OrbitControls;
 
@@ -63,6 +67,10 @@ export default class Camera extends EventEmitter {
       idle: new IdleKeyframe(),
       monitor: new MonitorKeyframe(),
       loading: new LoadingKeyframe(),
+      entry: new CameraKeyframeInstance({
+        position: new THREE.Vector3(-6550, 400, 14100),
+        focalPoint: new THREE.Vector3(-4500, 0, 6500),
+      }),
       desk: new DeskKeyframe(),
       orbitControlsStart: new OrbitControlsStart(),
     };
@@ -86,6 +94,18 @@ export default class Camera extends EventEmitter {
       }
     });
 
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || event.repeat || event.defaultPrevented)
+        return;
+      const target = event.target as HTMLElement;
+      if (
+        target.closest?.(
+          "input, textarea, select, [contenteditable=true], [role=dialog]",
+        )
+      )
+        return;
+      this.returnToDoor();
+    });
     this.setPostLoadTransition();
     this.setInstance();
     this.setMonitorListeners();
@@ -98,7 +118,12 @@ export default class Camera extends EventEmitter {
     easing?: any,
     callback?: () => void,
   ) {
-    if (this.paperActive || this.currentKeyframe === key) return;
+    if (
+      this.inspectionActive ||
+      this.paperActive ||
+      this.currentKeyframe === key
+    )
+      return;
 
     if (this.targetKeyframe) TWEEN.removeAll();
 
@@ -126,10 +151,10 @@ export default class Camera extends EventEmitter {
 
   setInstance() {
     this.instance = new THREE.PerspectiveCamera(
-      35,
+      58,
       this.sizes.width / this.sizes.height,
-      10,
-      900000,
+      100,
+      180000,
     );
     this.currentKeyframe = CameraKey.LOADING;
 
@@ -176,9 +201,69 @@ export default class Camera extends EventEmitter {
   }
 
   setPostLoadTransition() {
-    UIEventBus.on("loadingScreenDone", () => {
-      this.transition(CameraKey.IDLE, 2500, TWEEN.Easing.Exponential.Out);
+    UIEventBus.on("openDoor", () => {
+      if (this.doorwayBusy || this.roomEntered) return;
+      this.doorwayBusy = true;
+      const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      this.application.world.entrance.open();
+      window.setTimeout(
+        () => {
+          this.transition(
+            CameraKey.ENTRY,
+            reduced ? 1 : 1800,
+            TWEEN.Easing.Cubic.InOut,
+            () => {
+              this.transition(
+                CameraKey.IDLE,
+                reduced ? 1 : 2200,
+                TWEEN.Easing.Cubic.InOut,
+                () => {
+                  this.doorwayBusy = false;
+                  this.roomEntered = true;
+                  UIEventBus.dispatch("loadingScreenDone", {});
+                },
+              );
+            },
+          );
+        },
+        reduced ? 0 : 900,
+      );
     });
+  }
+
+  returnToDoor() {
+    if (
+      !this.roomEntered ||
+      this.doorwayBusy ||
+      this.inspectionActive ||
+      this.paperActive ||
+      this.freeCam ||
+      this.targetKeyframe ||
+      this.currentKeyframe !== CameraKey.IDLE
+    )
+      return;
+    this.doorwayBusy = true;
+    this.roomEntered = false;
+    UIEventBus.dispatch("returningToDoor", {});
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    this.transition(
+      CameraKey.ENTRY,
+      reduced ? 1 : 2200,
+      TWEEN.Easing.Cubic.InOut,
+      () => {
+        this.transition(
+          CameraKey.LOADING,
+          reduced ? 1 : 1800,
+          TWEEN.Easing.Cubic.InOut,
+          () => {
+            this.application.world.entrance.close(() => {
+              this.doorwayBusy = false;
+              UIEventBus.dispatch("doorClosed", {});
+            });
+          },
+        );
+      },
+    );
   }
 
   resize() {
@@ -202,16 +287,32 @@ export default class Camera extends EventEmitter {
       this.keyframes.orbitControlsStart.position,
     );
     this.orbitControls.dampingFactor = 0.05;
+    this.orbitControls.minPolarAngle = 1.05;
     this.orbitControls.maxPolarAngle = Math.PI / 2;
-    this.orbitControls.minDistance = 4000;
-    this.orbitControls.maxDistance = 29000;
+    this.orbitControls.minAzimuthAngle = -0.65;
+    this.orbitControls.maxAzimuthAngle = 0.65;
+    this.orbitControls.minDistance = 2500;
+    this.orbitControls.maxDistance = 4000;
 
     this.orbitControls.update();
   }
 
   update() {
-    if (this.paperActive) return;
+    if (this.paperActive || this.inspectionActive) return;
     TWEEN.update();
+    const view = this.targetKeyframe || this.currentKeyframe;
+    const roomView =
+      this.freeCam ||
+      view === CameraKey.IDLE ||
+      view === CameraKey.LOADING ||
+      view === CameraKey.ENTRY ||
+      view === CameraKey.ORBIT_CONTROLS_START;
+    const targetFov = roomView
+      ? this.sizes.width < this.sizes.height
+        ? 70
+        : 58
+      : 35;
+    this.instance.fov += (targetFov - this.instance.fov) * 0.08;
 
     if (this.freeCam && this.orbitControls) {
       this.position.copy(this.orbitControls.object.position);

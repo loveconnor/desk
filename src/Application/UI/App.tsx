@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
+import RoomInspector from "./components/RoomInspector";
 import LoadingScreen from "./components/LoadingScreen";
 import HelpPrompt from "./components/HelpPrompt";
 import InterfaceUI from "./components/InterfaceUI";
@@ -11,6 +12,7 @@ const App = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    eventBus.on("returningToDoor", () => setLoading(true));
     eventBus.on("loadingScreenDone", () => {
       setLoading(false);
     });
@@ -22,6 +24,7 @@ const App = () => {
         <>
           <HelpPrompt />
           <Documents />
+          <RoomInspector />
         </>
       )}
       <LoadingScreen />

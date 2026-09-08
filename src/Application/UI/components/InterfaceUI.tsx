@@ -12,6 +12,11 @@ const InterfaceUI: React.FC<InterfaceUIProps> = ({}) => {
   const interfaceRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    UIEventBus.on("returningToDoor", () => {
+      setLoading(true);
+      setVisible(false);
+      setInitLoad(true);
+    });
     UIEventBus.on("loadingScreenDone", () => {
       setLoading(false);
     });
