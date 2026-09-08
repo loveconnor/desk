@@ -39,6 +39,7 @@ export default class WallControls {
     this.ctx = this.canvas.getContext("2d")!;
     this.texture = new THREE.CanvasTexture(this.canvas);
     this.texture.encoding = THREE.sRGBEncoding;
+    this.texture.anisotropy = desk.app.renderer.instance.capabilities.getMaxAnisotropy();
     const face = desk.mesh(
       new THREE.PlaneGeometry(2190, 850),
       new THREE.MeshBasicMaterial({ map: this.texture }),
@@ -172,7 +173,8 @@ export default class WallControls {
       !camera.targetKeyframe &&
       (camera.freeCam ||
         camera.currentKeyframe === CameraKey.IDLE ||
-        camera.currentKeyframe === CameraKey.DESK)
+        camera.currentKeyframe === CameraKey.DESK ||
+        camera.currentKeyframe === CameraKey.MONITOR)
     );
   }
   private hit(x: number, y: number): Action | null {
@@ -214,7 +216,7 @@ export default class WallControls {
       b.ctx.fill();
       b.ctx.fillStyle = "#f8e9cc";
       b.ctx.textAlign = "center";
-      b.ctx.font = "26px sans-serif";
+      b.ctx.font = "bold 48px sans-serif";
       b.ctx.fillText(
         action === "sound"
           ? this.muted
@@ -223,14 +225,8 @@ export default class WallControls {
           : this.exploring
             ? "DESK VIEW"
             : "LOOK AROUND",
-        285,
-        70,
-      );
-      b.ctx.font = "18px sans-serif";
-      b.ctx.fillText(
-        action === "sound" ? "M · TOGGLE" : "C · TOGGLE",
-        285,
-        111,
+        275,
+        98,
       );
       b.texture.needsUpdate = true;
     }
@@ -248,17 +244,17 @@ export default class WallControls {
     ctx.fillRect(0, 0, 1024, 400);
     ctx.textAlign = "center";
     ctx.fillStyle = "#263a35";
-    ctx.font = "64px Georgia";
-    ctx.fillText("Connor Love", 512, 105);
-    ctx.font = "29px sans-serif";
-    ctx.fillText("WEB DEVELOPER", 512, 175);
+    ctx.font = "bold 108px Georgia";
+    ctx.fillText("Connor Love", 512, 115);
+    ctx.font = "46px sans-serif";
+    ctx.fillText("WEB DEVELOPER", 512, 193);
     ctx.strokeStyle = "#a99a7e";
     ctx.beginPath();
     ctx.moveTo(200, 220);
     ctx.lineTo(824, 220);
     ctx.stroke();
-    ctx.font = "48px monospace";
-    ctx.fillText(time, 512, 300);
+    ctx.font = "76px monospace";
+    ctx.fillText(time, 512, 335);
     this.texture.needsUpdate = true;
   }
 }

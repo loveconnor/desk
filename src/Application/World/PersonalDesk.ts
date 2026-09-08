@@ -679,12 +679,15 @@ export default class PersonalDesk {
     if (this.lift.height > -480) this.chairAside = true;
     if (this.lift.height < -560) this.chairAside = false;
     const before = this.chairModel.position.clone();
-    const goal = this.chairAside ? 1 : 0;
-    this.chairTravel = THREE.MathUtils.damp(this.chairTravel, goal, 2.2, dt);
+    const camera = this.app.camera;
+    const view = camera.targetKeyframe || camera.currentKeyframe;
+    const closeView = view === "desk" || view === "monitor" || camera.freeCam || view === "orbitControlsStart";
+    const goal = this.chairAside || closeView ? 1 : 0;
+    this.chairTravel = THREE.MathUtils.damp(this.chairTravel, goal, 4, dt);
     if (Math.abs(this.chairTravel - goal) < 0.001) this.chairTravel = goal;
     const t = this.chairTravel;
     // Pull back before curving left, leaving space between the desk and chair.
-    this.chairModel.position.set(-1150 * t * t, 0, 1840 + 1000 * t);
+    this.chairModel.position.set(-1750 * t * t, 0, 1840 + 1000 * t);
     this.chairModel.rotation.y = -0.22 * t;
     const delta = this.chairModel.position.clone().sub(before);
     const distance = delta.length();

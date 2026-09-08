@@ -22,10 +22,10 @@ export default class Hallway {
     // Exact clear wall bays between door casings. Each frame is closed and
     // independently inset, so no molding runs through an adjacent door.
     for (const [left, right] of [
-      [-12700, -12050],
+      [-40000, -12050],
       [-10150, -7830],
       [-5270, -2450],
-      [-550, 3790],
+      [-550, 30000],
     ]) {
       const w = right - left,
         x = (left + right) / 2;
@@ -51,22 +51,22 @@ export default class Hallway {
         }
       }
     }
-    box(17100, 100, 95, -4450, 2660, 16280, trim);
-    box(17100, 80, 180, -4450, 2790, 16270, plaster);
-    box(17100, 130, 9400, -4450, 2900, 20900, plaster);
-    for (const x of [-12750, 3850]) {
+    box(70000, 100, 95, -5000, 2660, 16280, trim);
+    box(70000, 80, 180, -5000, 2790, 16270, plaster);
+    box(70000, 130, 9400, -5000, 2900, 20900, plaster);
+    for (const x of [-40060, 30060]) {
       box(120, 5300, 9600, x, 300, 20900, plaster);
       box(150, 1800, 9600, x, -1370, 20900);
     }
     const tileA = desk.material(0xb9b3a6),
       tileB = desk.material(0xa6a89f);
     for (let row = 0; row < 12; row++)
-      for (let col = 0; col < 22; col++) {
+      for (let col = 0; col < 94; col++) {
         box(
           744,
           28,
           744,
-          -12500 + col * 750,
+          -39625 + col * 750,
           -2305,
           16600 + row * 750,
           (row + col) % 2 ? tileA : tileB,
@@ -141,10 +141,19 @@ export default class Hallway {
     }
     // Neighboring doors anchor the corridor's scale.
     for (const x of [-11100, -1500]) {
-      box(1900, 4170, 100, x, -195, 16275, trim);
-      box(1730, 3990, 80, x, -195, 16335, desk.material(0x715745));
-      box(80, 260, 60, x + 630, -150, 16400, brass);
-      box(210, 45, 100, x + 560, -150, 16435, brass);
+      // A recessed leaf sits inside three solid jambs, with a narrow reveal.
+      // The casing projects beyond the leaf instead of sitting behind it.
+      for (const side of [-1, 1])
+        box(85, 4170, 160, x + side * 907.5, -195, 16260, trim);
+      box(1730, 85, 160, x, 1847.5, 16260, trim);
+      box(1730, 45, 160, x, -2257.5, 16260, trim);
+      box(1714, 4024, 70, x, -215, 16255, desk.material(0x715745));
+      for (const y of [-1700, -200, 1350]) {
+        box(55, 135, 18, x - 837, y, 16300, brass);
+        desk.cylinder(18, 155, x - 865, y, 16310, brass, 18, this.group);
+      }
+      box(80, 260, 35, x + 630, -150, 16307, brass);
+      box(210, 45, 75, x + 560, -150, 16352, brass);
     }
   }
 }

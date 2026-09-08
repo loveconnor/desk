@@ -259,7 +259,7 @@ html[data-room-loading] .desktop-shortcut {
 }
 .door-entry-prompt {
   position: absolute;
-  bottom: 48px;
+  bottom: max(12px, env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   text-align: center;
@@ -300,7 +300,8 @@ html[data-room-loading] .desktop-shortcut {
 }
 @media (max-width: 600px) {
   .door-entry-prompt {
-    bottom: 70px;
+    bottom: max(42px, calc(env(safe-area-inset-bottom) + 30px));
+    left: 50%;
   }
   .door-entry-skip {
     right: 0;

@@ -12,15 +12,15 @@ export default class Entrance {
     const brass = desk.material(0xc4a16b, 0.6);
     const z = 16135;
     // Solid front wall with a genuine opening, matching the room boundary.
-    desk.box(5300, 13320, 150, -10350, 4330, z, wall).receiveShadow = false;
-    desk.box(9500, 13320, 150, -650, 4330, z, wall).receiveShadow = false;
-    desk.box(2300, 8990, 150, -6550, 6495, z, wall).receiveShadow = false;
+    desk.box(32300, 7830, 150, -23850, 1585, z, wall).receiveShadow = false;
+    desk.box(35400, 7830, 150, 12300, 1585, z, wall).receiveShadow = false;
+    desk.box(2300, 3500, 150, -6550, 3750, z, wall).receiveShadow = false;
     for (const x of [-7750, -5350])
       desk.box(160, 4370, 250, x, -145, z, frame, 12);
     desk.box(2560, 160, 250, -6550, 2080, z, frame, 12);
     desk.box(2450, 60, 330, -6550, -2290, z, brass, 8);
     // A small landing outside the doorway, without a floating floor edge.
-    desk.box(17100, 90, 8500, -4450, -2365, 20450, desk.material(0xbfa484), 1);
+    desk.box(70000, 90, 9400, -5000, -2365, 20450, desk.material(0xbfa484), 1);
     this.hinge.position.set(-7700, -2310, z);
     desk.app.scene.add(this.hinge);
     desk.box(2300, 4290, 115, 1150, 2145, 0, wood, 16, this.hinge);
@@ -41,10 +41,12 @@ export default class Entrance {
     ctx.fillRect(0, 0, 1024, 256);
     ctx.fillStyle = "#283930";
     ctx.textAlign = "center";
-    ctx.font = "52px Georgia";
-    ctx.fillText("Connor Love", 512, 148);
+    ctx.font = "bold 120px Georgia";
+    ctx.textBaseline = "middle";
+    ctx.fillText("Connor Love", 512, 134);
     const texture = new THREE.CanvasTexture(canvas);
     texture.encoding = THREE.sRGBEncoding;
+    texture.anisotropy = desk.app.renderer.instance.capabilities.getMaxAnisotropy();
     desk.box(1180, 320, 38, 1150, 3220, 126, brass, 12, this.hinge);
     const plaque = desk.mesh(
       new THREE.PlaneGeometry(1120, 280),

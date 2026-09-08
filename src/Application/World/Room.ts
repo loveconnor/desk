@@ -131,11 +131,11 @@ export default class Room {
       }
     }
     // Back wall is built around a real opening for the window.
-    this.box(9350, 13320, 140, -8325, 4330, -2100, plaster);
-    this.box(5650, 13320, 140, 1275, 4330, -2100, plaster);
+    this.box(9350, 7830, 140, -8325, 1585, -2100, plaster);
+    this.box(5650, 7830, 140, 1275, 1585, -2100, plaster);
     this.box(2100, 2300, 140, -2600, -1180, -2100, plaster);
-    this.box(2100, 8820, 140, -2600, 6580, -2100, plaster);
-    this.box(140, 13320, 18225, 4100, 4330, 7022.5, sage);
+    this.box(2100, 3330, 140, -2600, 3835, -2100, plaster);
+    this.box(140, 7830, 18225, 4100, 1585, 7022.5, sage);
     this.box(17100, 120, 45, -4450, -2250, -2005, trim);
     this.box(45, 120, 18225, 4005, -2250, 7022.5, trim);
   }
@@ -164,9 +164,23 @@ export default class Room {
       mesh.castShadow = false;
       return mesh;
     };
-    plane(18225, 13320, -13000, 4330, 7022.5, 0, Math.PI / 2);
+    plane(18225, 7830, -13000, 1585, 7022.5, 0, Math.PI / 2);
 
-    plane(17100, 18225, -4450, 10990, 7022.5, Math.PI / 2, 0);
+    // Fixed ceiling clears the elevated overview without changing any camera.
+    const ceiling = plane(17100, 18225, -4450, 5500, 7022.5, Math.PI / 2, 0);
+    ceiling.name = "Apartment ceiling — fixed height";
+    const ceilingPaint = this.desk.material(0xf2eee5);
+    ceilingPaint.roughness = 1;
+    ceiling.material = ceilingPaint;
+    const cornice = this.desk.material(0xf3ead9);
+    for (const z of [-2015, 16035]) {
+      this.box(17000, 90, 75, -4450, 5420, z, cornice, 4);
+      this.box(17000, 35, 110, -4450, 5475, z, cornice, 3);
+    }
+    for (const x of [-12915, 4015]) {
+      this.box(75, 90, 18100, x, 5420, 7022.5, cornice, 4);
+      this.box(110, 35, 18100, x, 5475, 7022.5, cornice, 3);
+    }
   }
 
   window() {

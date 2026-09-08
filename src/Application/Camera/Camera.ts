@@ -42,6 +42,7 @@ export default class Camera extends EventEmitter {
   inspectionActive = false;
   private doorwayBusy = false;
   private roomEntered = false;
+  private pendingApproach?: () => void;
   freeCam: boolean;
   orbitControls: OrbitControls;
 
@@ -75,24 +76,32 @@ export default class Camera extends EventEmitter {
       orbitControlsStart: new OrbitControlsStart(),
     };
 
+    // Only a deliberate click on visible desk geometry enters the close view.
+    let press: { x: number; y: number; view: CameraKey } | null = null;
+    const blocked = (event: MouseEvent) =>
+      event.button !== 0 || event.defaultPrevented || this.freeCam ||
+      this.inspectionActive || this.paperActive || !!this.targetKeyframe ||
+      !!(event.target as HTMLElement).closest?.(
+        "[data-desk-ui], #prevent-click, button, a, input, textarea, [role=dialog]",
+      );
     document.addEventListener("mousedown", (event) => {
-      if ((event.target as HTMLElement).closest?.("[data-desk-ui]")) return;
-      event.preventDefault();
-      // @ts-ignore
-      if (event.target.id === "prevent-click") return;
-      // print target and current keyframe
-      if (
-        this.currentKeyframe === CameraKey.IDLE ||
-        this.targetKeyframe === CameraKey.IDLE
-      ) {
-        this.transition(CameraKey.DESK);
-      } else if (
-        this.currentKeyframe === CameraKey.DESK ||
-        this.targetKeyframe === CameraKey.DESK
-      ) {
-        this.transition(CameraKey.IDLE);
-      }
+      press = null;
+      if (blocked(event)) return;
+      if (this.currentKeyframe === CameraKey.IDLE && this.hitsDesk(event))
+        press = { x: event.clientX, y: event.clientY, view: CameraKey.IDLE };
+      else if (this.currentKeyframe === CameraKey.DESK)
+        press = { x: event.clientX, y: event.clientY, view: CameraKey.DESK };
     });
+    document.addEventListener("mouseup", (event) => {
+      const start = press;
+      press = null;
+      if (!start || blocked(event) || this.currentKeyframe !== start.view ||
+          Math.hypot(event.clientX - start.x, event.clientY - start.y) > 6 ||
+          (start.view === CameraKey.IDLE && !this.hitsDesk(event))) return;
+      this.transition(start.view === CameraKey.IDLE ? CameraKey.DESK : CameraKey.IDLE);
+    });
+    window.addEventListener("blur", () => { press = null; });
+    document.addEventListener("pointercancel", () => { press = null; });
 
     document.addEventListener("keydown", (event) => {
       if (event.key !== "Escape" || event.repeat || event.defaultPrevented)
@@ -112,6 +121,33 @@ export default class Camera extends EventEmitter {
     this.setFreeCamListeners();
   }
 
+  private hitsDesk(event: MouseEvent) {
+    const desktop = this.application.world?.computerSetup?.desktop;
+    if (!desktop) return false;
+    const ray = new THREE.Raycaster();
+    const bounds = this.renderer.instance.domElement.getBoundingClientRect();
+    ray.setFromCamera(new THREE.Vector2(
+      ((event.clientX - bounds.left) / bounds.width) * 2 - 1,
+      -((event.clientY - bounds.top) / bounds.height) * 2 + 1,
+    ), this.instance);
+    const hit = ray.intersectObjects(this.scene.children, true).find(({ object }) => {
+      if (!(object instanceof THREE.Mesh)) return false;
+      let ancestor: THREE.Object3D | null = object;
+      while (ancestor) {
+        if (!ancestor.visible) return false;
+        ancestor = ancestor.parent;
+      }
+      const materials = Array.isArray(object.material) ? object.material : [object.material];
+      return materials.some((m) => m.visible && (!m.transparent || m.opacity > 0));
+    });
+    let object: THREE.Object3D | null = hit?.object || null;
+    while (object) {
+      if (object === desktop) return true;
+      object = object.parent;
+    }
+    return false;
+  }
+
   transition(
     key: CameraKey,
     duration: number = 1000,
@@ -126,6 +162,7 @@ export default class Camera extends EventEmitter {
       return;
 
     if (this.targetKeyframe) TWEEN.removeAll();
+    this.pendingApproach = undefined;
 
     this.currentKeyframe = undefined;
     this.targetKeyframe = key;
@@ -145,8 +182,11 @@ export default class Camera extends EventEmitter {
       .to(keyframe.focalPoint, duration)
       .easing(easing || TWEEN.Easing.Quintic.InOut);
 
-    posTween.start();
-    focTween.start();
+    const start = () => { posTween.start(); focTween.start(); };
+    const chair = this.application.world?.computerSetup?.chairModel;
+    if ((key === CameraKey.DESK || key === CameraKey.MONITOR) && chair && chair.position.x > -1400) {
+      this.pendingApproach = start;
+    } else start();
   }
 
   setInstance() {
@@ -163,10 +203,12 @@ export default class Camera extends EventEmitter {
 
   setMonitorListeners() {
     this.on("enterMonitor", () => {
+      if (this.currentKeyframe !== CameraKey.DESK || this.targetKeyframe || this.freeCam) return;
       this.transition(CameraKey.MONITOR, 2000, BezierEasing(0.13, 0.99, 0, 1));
       UIEventBus.dispatch("enterMonitor", {});
     });
     this.on("leftMonitor", () => {
+      if (this.currentKeyframe !== CameraKey.MONITOR && this.targetKeyframe !== CameraKey.MONITOR) return;
       this.transition(CameraKey.DESK);
       UIEventBus.dispatch("leftMonitor", {});
     });
@@ -299,6 +341,11 @@ export default class Camera extends EventEmitter {
 
   update() {
     if (this.paperActive || this.inspectionActive) return;
+    if (this.pendingApproach && this.application.world.computerSetup.chairModel.position.x <= -1400) {
+      const start = this.pendingApproach;
+      this.pendingApproach = undefined;
+      start();
+    }
     TWEEN.update();
     const view = this.targetKeyframe || this.currentKeyframe;
     const roomView =

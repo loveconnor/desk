@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
+import RoomControls from "./components/RoomControls";
 import RoomInspector from "./components/RoomInspector";
 import LoadingScreen from "./components/LoadingScreen";
 import HelpPrompt from "./components/HelpPrompt";
@@ -27,6 +28,7 @@ const App = () => {
           <RoomInspector />
         </>
       )}
+      <RoomControls hidden={loading} />
       <LoadingScreen />
     </div>
   );

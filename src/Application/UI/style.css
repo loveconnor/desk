@@ -183,3 +183,17 @@ br {
     padding-bottom: 32px;
   }
 }
+
+.room-controls {
+  position: fixed;
+  bottom: 22px;
+  left: 22px;
+  z-index: 100;
+  display: flex;
+  gap: 8px;
+  pointer-events: auto;
+}
+.room-controls .portfolio-control { min-height: 44px; padding: 12px 20px; }
+@media (max-width: 600px) {
+  .room-controls { left: 12px; bottom: 76px; }
+}
