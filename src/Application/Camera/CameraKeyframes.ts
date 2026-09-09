@@ -1,3 +1,4 @@
+import { MONITOR } from "../World/monitorLayout";
 import { DESK_WALL_OFFSET_Z } from "../World/deskLayout";
 import * as THREE from "three";
 import { CameraKey } from "./Camera";
@@ -24,8 +25,8 @@ const keys: { [key in CameraKey]: CameraKeyframe } = {
     focalPoint: new THREE.Vector3(0, -400, 200),
   },
   monitor: {
-    position: new THREE.Vector3(0, 950, 2000),
-    focalPoint: new THREE.Vector3(0, 950, 0),
+    position: new THREE.Vector3(0, MONITOR.screenY, 2000),
+    focalPoint: new THREE.Vector3(0, MONITOR.screenY, MONITOR.z),
   },
   desk: {
     position: new THREE.Vector3(0, 1100, 4000),
@@ -68,13 +69,15 @@ export class MonitorKeyframe extends CameraKeyframeInstance {
 
   update() {
     this.focalPoint.y =
-      950 + (this.application.world?.computerSetup?.lift?.height ?? 0);
+      MONITOR.screenY +
+      (this.application.world?.computerSetup?.lift?.height ?? 0);
     const aspect = this.sizes.height / this.sizes.width;
     this.targetPos.z =
-      Math.max(1012, 1800 * aspect) /
+      Math.max(MONITOR.screenHeight, MONITOR.screenWidth * aspect) /
         (2 * Math.tan(THREE.MathUtils.degToRad(17.5))) -
       260 +
-      180 + DESK_WALL_OFFSET_Z;
+      180 +
+      DESK_WALL_OFFSET_Z;
     this.position.copy(this.targetPos);
     this.position.y += this.application.world?.computerSetup?.lift?.height ?? 0;
   }
@@ -119,7 +122,11 @@ export class DeskKeyframe extends CameraKeyframeInstance {
       Math.min(1, (this.mouse.y / this.sizes.height) * 2 - 1),
     );
     this.targetFoc.lerp(
-      new THREE.Vector3(pointerX * 160, 650 - pointerY * 100, DESK_WALL_OFFSET_Z),
+      new THREE.Vector3(
+        pointerX * 160,
+        650 - pointerY * 100,
+        DESK_WALL_OFFSET_Z,
+      ),
       0.05,
     );
     this.targetPos.lerp(

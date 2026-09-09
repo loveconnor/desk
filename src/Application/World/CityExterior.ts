@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import PersonalDesk from "./PersonalDesk";
-import { mergeBufferGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 /** Independent exterior lighting: blinds darken the room, never the city. */
 export default class CityExterior {
@@ -16,7 +15,7 @@ export default class CityExterior {
     side: THREE.BackSide,
     fog: false,
   });
-  windows = new THREE.MeshBasicMaterial({ color: 0xffce88 });
+  streetLampGlow = new THREE.MeshBasicMaterial({ color: 0xffce88 });
   constructor(private desk: PersonalDesk) {
     this.group.name = "Modeled city blocks — Kenney commercial buildings";
     desk.app.scene.add(this.group);
@@ -62,7 +61,7 @@ export default class CityExterior {
       box(340, 50, 140, x + 120, -3800, -4400, 0x343e43);
       const glow = new THREE.Mesh(
         new THREE.BoxGeometry(220, 12, 100),
-        this.windows,
+        this.streetLampGlow,
       );
       glow.position.set(x + 120, -3830, -4400);
       this.group.add(glow);
@@ -105,27 +104,6 @@ export default class CityExterior {
           model.position.set(x - center.x, -5400 - scaled.min.y, z - center.z);
           model.name = `City block ${row}-${col}: ${names[index]}`;
           this.group.add(model);
-          // Repeated warm windows remain legible at night without lighting the room.
-          // Windows are static and share a material. Keep one batch per block
-          // so the renderer can still cull buildings outside the camera view.
-          const windowGeometry: THREE.BufferGeometry[] = [];
-          const rows = Math.min(24, Math.floor(height / 350));
-          for (let level = 1; level < rows; level += 2)
-            for (let w = 0; w < 4; w++) {
-              if ((level * 3 + w + col) % 3 === 0) continue;
-              const geometry = new THREE.PlaneGeometry(110, 130);
-              geometry.translate(
-                x - 800 + w * 480,
-                -5400 + level * 350,
-                z + (size.z * scale) / 2 + 4,
-              );
-              windowGeometry.push(geometry);
-            }
-          const merged = mergeBufferGeometries(windowGeometry);
-          windowGeometry.forEach((geometry) => geometry.dispose());
-          const windows = new THREE.Mesh(merged, this.windows);
-          windows.name = `City windows ${row}-${col}`;
-          this.group.add(windows);
         }
       this.setLayers();
       this.ready = true;
@@ -187,7 +165,7 @@ export default class CityExterior {
       0.022 + day * 0.53,
       0.055 + day * 0.66,
     );
-    this.windows.color.setRGB(
+    this.streetLampGlow.color.setRGB(
       0.18 + (1 - day) * 0.8,
       0.22 + (1 - day) * 0.42,
       0.25 + (1 - day) * 0.05,

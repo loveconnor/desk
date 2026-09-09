@@ -96,6 +96,8 @@ export default class Renderer {
         depthWrite: false,
       }),
     );
+    // The shader draws in clip space, independently of the room camera.
+    this.overlay.frustumCulled = false;
 
     this.overlayScene.add(this.overlay);
   }
@@ -124,12 +126,6 @@ export default class Renderer {
 
     this.instance.render(this.scene, this.camera.instance);
     this.cssInstance.render(this.cssScene, this.camera.instance);
-    this.overlayInstance.domElement.style.visibility = this.camera
-      .inspectionActive
-      ? "hidden"
-      : "visible";
-    if (!this.camera.inspectionActive)
-      this.overlayInstance.render(this.overlayScene, this.camera.instance);
-    this.overlay.position.copy(this.camera.instance.position);
+    this.overlayInstance.render(this.overlayScene, this.camera.instance);
   }
 }

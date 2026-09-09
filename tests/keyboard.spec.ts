@@ -40,3 +40,22 @@ test('desktop typing plays one click per press without swallowing input', async 
   await page.keyboard.press('b');
   expect(await page.evaluate(() => (window as any).keyboardClips.length)).toBe(3);
 });
+
+test('Air75 has 84 keys and keeps every row inside the case with equal side clearance', async () => {
+  const { air75Keys, AIR75_SIZE } = await import('../src/keyboard/Air75Layout');
+  expect(air75Keys).toHaveLength(84);
+  expect(new Set(air75Keys.map(key => key.code)).size).toBe(84);
+  for (let row = 0; row < 6; row++) {
+    const keys = air75Keys.filter(key => key.row === row);
+    expect(keys.reduce((sum, key) => sum + key.units, 0)).toBe(16);
+    const intervals = keys.map(key => ({
+      left: (key.x - key.units / 2) * AIR75_SIZE.pitch + 0.55,
+      right: (key.x + key.units / 2) * AIR75_SIZE.pitch - 0.55,
+    }));
+    expect(intervals[0].left + AIR75_SIZE.width / 2).toBeCloseTo(6);
+    expect(AIR75_SIZE.width / 2 - intervals.at(-1)!.right).toBeCloseTo(6);
+    intervals.slice(1).forEach((interval, i) => {
+      expect(interval.left - intervals[i].right).toBeCloseTo(1.1);
+    });
+  }
+});

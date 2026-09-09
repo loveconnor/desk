@@ -1,7 +1,12 @@
+import { createRecycling } from "./Recycling";
 import { DESK_WALL_OFFSET_Z } from "./deskLayout";
 import RoomWindow from "./RoomWindow";
+import { clockHandAngles } from "./clockTime";
 import Apartment from "./Apartment";
-import { bookArtwork, ArtFace } from "./bookArtwork";
+import { bookArtwork } from "./bookArtwork";
+import { loadBookTexture } from "./bookTexture";
+import { jacketGeometry } from "./bookBinding";
+import { bookshelfRow } from "./bookshelfLayout";
 import * as THREE from "three";
 import RoomInteractions from "./RoomInteractions";
 import { roomBooks, roomNotes } from "./roomContent";
@@ -58,36 +63,6 @@ export default class Room {
       this.desk.app.renderer.instance.capabilities.getMaxAnisotropy(),
     );
     return texture;
-  }
-
-  artwork(face: ArtFace, width: number, height: number) {
-    const texture = new THREE.TextureLoader().load("/room/books/" + face.file);
-    texture.encoding = THREE.sRGBEncoding;
-    texture.anisotropy =
-      this.desk.app.renderer.instance.capabilities.getMaxAnisotropy();
-    const geometry = new THREE.PlaneGeometry(width, height, 24, 24);
-    if (face.corners) {
-      const [tl, tr, br, bl] = face.corners;
-      const uv = geometry.attributes.uv;
-      for (let i = 0; i < uv.count; i++) {
-        const x = uv.getX(i),
-          y = 1 - uv.getY(i);
-        uv.setXY(
-          i,
-          (tl[0] * (1 - x) + tr[0] * x) * (1 - y) +
-            (bl[0] * (1 - x) + br[0] * x) * y,
-          1 -
-            ((tl[1] * (1 - x) + tr[1] * x) * (1 - y) +
-              (bl[1] * (1 - x) + br[1] * x) * y),
-        );
-      }
-    }
-    const mesh = new THREE.Mesh(
-      geometry,
-      new THREE.MeshBasicMaterial({ map: texture }),
-    );
-    mesh.castShadow = false;
-    return mesh;
   }
 
   architecture() {
@@ -308,48 +283,68 @@ export default class Room {
     );
 
     // A full-height bookcase anchors the window side of the office.
+    const woodGrain = this.texture((ctx) => {
+      ctx.fillStyle = "#a58258";
+      ctx.fillRect(0, 0, 512, 512);
+      for (let line = 0; line < 190; line++) {
+        ctx.strokeStyle =
+          line % 3 ? "rgba(72,43,20,0.10)" : "rgba(235,208,156,0.17)";
+        ctx.lineWidth = 0.6 + (line % 3) * 0.45;
+        ctx.beginPath();
+        for (let step = 0; step <= 16; step++) {
+          const px = line * 2.8 + Math.sin(step * 0.4 + line * 0.8) * 2;
+          if (step === 0) ctx.moveTo(px, 0);
+          else ctx.lineTo(px, step * 32);
+        }
+        ctx.stroke();
+      }
+    });
+    const shelfWood = new THREE.MeshStandardMaterial({
+      map: woodGrain,
+      roughness: 0.72,
+    });
     const x = -5350;
-    this.box(1950, 3750, 80, x, -435, -1940, oak);
+    this.box(1950, 3750, 80, x, -435, -1940, shelfWood);
     for (const offset of [-950, 950])
-      this.box(85, 3750, 650, x + offset, -435, -1620, oak);
+      this.box(85, 3750, 650, x + offset, -435, -1620, shelfWood);
+    // A recessed plinth and projecting top give the case furniture-like joinery.
+    this.box(1780, 105, 560, x, -2250, -1660, shelfWood, 4);
+    this.box(2050, 90, 735, x, 1440, -1590, shelfWood, 6);
     for (let row = 0; row < 6; row++) {
       const y = -2270 + row * 730;
-      this.box(1950, 75, 700, x, y, -1600, oak);
+      this.box(1950, 65, 700, x, y, -1600, shelfWood, 4);
+      this.box(1860, 32, 16, x, y - 15, -1245, shelfWood, 2);
       if (row === 5) continue;
-      if (row === 0 || row === 3) {
+      if (row === 0) {
         for (let i = 0; i < 2; i++) {
           this.box(690, 440, 500, x - 445 + i * 875, y + 260, -1560, cream, 25);
           this.box(180, 65, 12, x - 445 + i * 875, y + 290, -1298, dark, 7);
         }
       } else {
-        for (let i = 0; i < 11; i++) {
-          const height = 400 + ((i * 71 + row * 43) % 160);
-          const bx = x - 795 + i * 130;
-          const index = (i + row * 3) % roomBooks.length;
+        for (const placement of bookshelfRow(row)) {
+          const { index, height, width, thickness } = placement;
           const book = roomBooks[index];
-          const ratios = [
-            163 / 250,
-            322 / 500,
-            311 / 400,
-            382 / 500,
-            381 / 500,
-            381 / 500,
-            378 / 500,
-            381 / 500,
-            131 / 160,
-            381 / 500,
-            293 / 500,
-          ];
-          const width = height * ratios[index];
           const volume = new THREE.Group();
-          volume.position.set(bx, y + 40 + height / 2, -1530);
-          volume.rotation.y = Math.PI / 2;
+          volume.userData.bookIndex = index;
+          volume.position.set(
+            x + placement.x,
+            y + 33 + placement.y,
+            placement.rotationY === 0
+              ? -1280 - thickness / 2
+              : -1270 - width / 2,
+          );
+          volume.rotation.set(
+            0,
+            placement.rotationY,
+            placement.rotationZ,
+            "ZYX",
+          );
           this.group.add(volume);
           const binding = this.desk.material(parseInt(book.color.slice(1), 16));
           this.desk.box(
             width - 8,
             height - 14,
-            78,
+            thickness - 12,
             0,
             0,
             0,
@@ -357,68 +352,87 @@ export default class Room {
             3,
             volume,
           );
-          for (const z of [-47, 47])
-            this.desk.box(width, height, 10, 0, 0, z, binding, 2, volume);
-          this.desk.box(
-            12,
-            height,
-            104,
-            -width / 2 + 2,
-            0,
-            0,
-            binding,
-            3,
-            volume,
-          );
-          const faces = bookArtwork[index];
-          const front = this.artwork(
-            faces?.front || { file: index + ".jpg" },
-            width - 4,
-            height - 4,
-          );
-          front.position.z = 53;
-          volume.add(front);
-          if (faces?.back) {
-            const back = this.artwork(faces.back, width - 4, height - 4);
-            back.position.z = -53;
-            back.rotation.y = Math.PI;
-            volume.add(back);
-          }
-          const spine = this.texture((ctx) => {
-            ctx.fillStyle = [
-              "#f7f7f5",
-              "#f4d929",
-              "#7b171b",
-              "#252522",
-              "#c51f27",
-              "#fffdf8",
-              "#f5d21d",
-              "#fffdf8",
-              "#ed9828",
-              "#fffdf8",
-              "#191919",
-            ][index];
+
+          const pageEdges = this.texture((ctx) => {
+            ctx.fillStyle = "#e5dfcc";
             ctx.fillRect(0, 0, 512, 512);
-            ctx.translate(256, 256);
-            ctx.rotate(-Math.PI / 2);
-            ctx.fillStyle = [0, 1, 5, 6, 7, 8, 9].includes(index)
-              ? "#171919"
-              : "#f8e9cc";
-            ctx.textAlign = "center";
-            ctx.font = "28px sans-serif";
-            ctx.fillText(book.title, 0, 0, 460);
-            ctx.font = "18px sans-serif";
-            ctx.fillText(book.author, 0, 70, 460);
-          }, 2048);
-          const label = faces?.spine
-            ? this.artwork(faces.spine, 98, height - 4)
-            : new THREE.Mesh(
-                new THREE.PlaneGeometry(98, height - 4),
-                new THREE.MeshBasicMaterial({ map: spine }),
-              );
-          label.position.set(-width / 2 - 6, 0, 0);
-          label.rotation.y = -Math.PI / 2;
-          label.castShadow = false;
+            for (let p = 0; p < 512; p += 8) {
+              ctx.fillStyle = p % 24 ? "#d1c9b5" : "#bfb6a0";
+              ctx.fillRect(0, p, 512, 1);
+            }
+          }, 128);
+          const foreEdge = new THREE.Mesh(
+            new THREE.PlaneGeometry(thickness - 14, height - 16),
+            new THREE.MeshStandardMaterial({ map: pageEdges, roughness: 1 }),
+          );
+          foreEdge.rotation.y = Math.PI / 2;
+          foreEdge.position.x = width / 2 - 3;
+          volume.add(foreEdge);
+          const faces = bookArtwork[index];
+          const frontMap = loadBookTexture(
+            faces?.front || { file: index + ".jpg" },
+            width,
+            height,
+          );
+          const cover = (side: "front" | "back") => {
+            const map =
+              side === "front"
+                ? frontMap
+                : faces?.back
+                  ? loadBookTexture(faces.back, width, height)
+                  : undefined;
+            const mesh = new THREE.Mesh(
+              jacketGeometry(width, height, 4, side),
+              map ? new THREE.MeshBasicMaterial({ map }) : binding,
+            );
+            mesh.position.z = (side === "front" ? 1 : -1) * (thickness / 2 - 2);
+            mesh.castShadow = true;
+            volume.add(mesh);
+          };
+          cover("front");
+          cover("back");
+          const spine = faces?.spine
+            ? undefined
+            : this.texture((ctx) => {
+                ctx.fillStyle =
+                  [
+                    "#f7f7f5",
+                    "#f4d929",
+                    "#7b171b",
+                    "#252522",
+                    "#c51f27",
+                    "#fffdf8",
+                    "#f5d21d",
+                    "#fffdf8",
+                    "#ed9828",
+                    "#fffdf8",
+                    "#191919",
+                  ][index] ?? book.color;
+                ctx.fillRect(0, 0, 512, 512);
+                const spineAspect = (thickness - 2) / (height - 4);
+                ctx.scale(1 / spineAspect, 1);
+                ctx.translate(256 * spineAspect, 256);
+                ctx.rotate(-Math.PI / 2);
+                ctx.fillStyle =
+                  [0, 1, 5, 6, 7, 8, 9].includes(index) ||
+                  ["#b9ac86", "#d8ccb2", "#a58950"].includes(book.color)
+                    ? "#171919"
+                    : "#f8e9cc";
+                ctx.textAlign = "center";
+                ctx.font = "18px sans-serif";
+                ctx.fillText(book.title, 0, 0, 460);
+                ctx.font = "10px sans-serif";
+                ctx.fillText(book.author, 0, 14, 460);
+              }, 512);
+          const spineMap = faces?.spine
+            ? loadBookTexture(faces.spine, thickness, height)
+            : spine;
+          const label = new THREE.Mesh(
+            jacketGeometry(4, height, thickness, "spine"),
+            new THREE.MeshBasicMaterial({ map: spineMap }),
+          );
+          label.position.x = -width / 2 + 1;
+          label.castShadow = true;
           volume.add(label);
           this.interactions.pickup(
             volume,
@@ -605,7 +619,7 @@ export default class Room {
     // A clock above the bookcase and a basket by the desk complete the room.
     const clockPartsStart = this.group.children.length;
     const clock = this.desk.mesh(
-      new THREE.CylinderGeometry(340, 340, 60, 48),
+      new THREE.CylinderGeometry(340, 340, 60, 96),
       dark,
       -5350,
       2350,
@@ -613,33 +627,65 @@ export default class Room {
       this.group,
     );
     clock.rotation.x = Math.PI / 2;
+    const bezel = this.desk.mesh(
+      new THREE.TorusGeometry(319, 18, 12, 96),
+      this.desk.material(0x555b58, 0.65),
+      -5350,
+      2350,
+      -1895,
+      this.group,
+    );
+    bezel.name = "Clock beveled rim";
+    const dial = this.texture((ctx) => {
+      ctx.fillStyle = "#f5f2e9";
+      ctx.fillRect(0, 0, 512, 512);
+      ctx.strokeStyle = "#303633";
+      for (let i = 0; i < 60; i++) {
+        const angle = (i * Math.PI) / 30;
+        const outer = 238,
+          inner = i % 5 === 0 ? 218 : 229;
+        ctx.lineWidth = i % 5 === 0 ? 3.5 : 1.3;
+        ctx.beginPath();
+        ctx.moveTo(
+          256 + Math.sin(angle) * inner,
+          256 - Math.cos(angle) * inner,
+        );
+        ctx.lineTo(
+          256 + Math.sin(angle) * outer,
+          256 - Math.cos(angle) * outer,
+        );
+        ctx.stroke();
+      }
+      ctx.fillStyle = "#303633";
+      ctx.font = "500 43px Arial, sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      for (let hour = 1; hour <= 12; hour++) {
+        const angle = (hour * Math.PI) / 6;
+        ctx.fillText(
+          String(hour),
+          256 + Math.sin(angle) * 182,
+          258 - Math.cos(angle) * 182,
+        );
+      }
+      ctx.font = "12px Arial, sans-serif";
+      ctx.fillStyle = "#85877f";
+      ctx.fillText("QUARTZ", 256, 335);
+    }, 1024);
     const face = this.desk.mesh(
-      new THREE.CircleGeometry(302, 48),
-      paper,
+      new THREE.CircleGeometry(302, 96),
+      new THREE.MeshStandardMaterial({ map: dial, roughness: 0.9 }),
       -5350,
       2350,
       -1890,
       this.group,
     );
+    face.name = "Clock numbered dial";
     face.castShadow = false;
-    for (let i = 0; i < 12; i++) {
-      const angle = (i * Math.PI) / 6;
-      const tick = this.box(
-        12,
-        40,
-        5,
-        -5350 + Math.sin(angle) * 263,
-        2350 + Math.cos(angle) * 263,
-        -1880,
-        dark,
-        1,
-      );
-      tick.rotation.z = -angle;
-    }
     for (const [length, width, z, color] of [
-      [155, 18, -1870, 0x343c39],
-      [240, 12, -1855, 0x343c39],
-      [260, 5, -1840, 0xb76b49],
+      [155, 16, -1870, 0x343c39],
+      [222, 10, -1855, 0x343c39],
+      [274, 4, -1840, 0xb3503b],
     ]) {
       const pivot = new THREE.Group();
       pivot.position.set(-5350, 2350, z);
@@ -656,10 +702,27 @@ export default class Room {
         pivot,
       );
       hand.castShadow = false;
+      pivot.name = [
+        "Clock hour hand",
+        "Clock minute hand",
+        "Clock second hand",
+      ][this.clockHands.length];
+      if (this.clockHands.length === 2) {
+        this.desk.box(7, 62, 6, 0, -31, 0, this.desk.material(color), 2, pivot);
+      }
       this.clockHands.push(pivot);
     }
+    this.desk.mesh(
+      new THREE.SphereGeometry(15, 24, 12),
+      this.desk.material(0x343c39, 0.4),
+      -5350,
+      2350,
+      -1829,
+      this.group,
+    ).scale.z = 0.45;
     const clockParts = this.group.children.slice(clockPartsStart);
     const clockAssembly = new THREE.Group();
+    clockAssembly.name = "Wall clock";
     clockAssembly.position.set(-5350, 2350, -1930);
     this.group.add(clockAssembly);
     this.group.updateWorldMatrix(true, true);
@@ -674,117 +737,24 @@ export default class Room {
       680,
       680,
     );
-    // Open-sided bin with visible discarded cans rather than a solid lid.
-    const binMat = this.desk.material(0x8c9a8c);
-    binMat.side = THREE.DoubleSide;
-    this.desk.mesh(
-      new THREE.CylinderGeometry(270, 225, 510, 32, 1, true),
-      binMat,
-      -2110,
-      -2050,
-      -570,
-      this.group,
-    );
-    this.desk.cylinder(220, 12, -2110, -2290, -570, dark, 220, this.group);
-    const rim = this.desk.mesh(
-      new THREE.TorusGeometry(270, 12, 8, 48),
-      binMat,
-      -2110,
-      -1795,
-      -570,
-      this.group,
-    );
-    rim.rotation.x = Math.PI / 2;
-    for (let i = 0; i < 6; i++) {
-      const can = new THREE.Group();
-      const a = i * 2.4;
+    const recycling = createRecycling(this.desk.app.renderer.instance);
+    recycling.bin.position.set(-2110, -2305, -570);
+    this.group.add(recycling.bin);
+    for (let i = 0; i < 7; i++) {
+      const can = recycling.can(i);
+      const angle = i * 2.4;
+      const lower = i < 3;
       can.position.set(
-        -2110 + Math.cos(a) * 130,
-        -1930 + (i % 3) * 45,
-        -570 + Math.sin(a) * 130,
+        -2110 + Math.cos(angle) * (lower ? 100 : 105),
+        lower ? -2160 : -1925 + (i % 2) * 25,
+        -570 + Math.sin(angle) * 105,
       );
-      can.rotation.set((i % 2 ? 1 : -1) * 0.35, a, 0.25);
-      can.scale.set(0.7, 1, 0.7);
+      can.rotation.set(
+        lower ? 1.1 : 0.24 + (i % 3) * 0.19,
+        angle,
+        lower ? 0.35 : -0.22,
+      );
       this.group.add(can);
-      const mat = this.desk.material(0x111711, 0.55);
-      mat.roughness = 0.35;
-      // Lathed aluminum silhouette: rolled rims and tapered shoulders.
-      const profile = [
-        [-116, 54],
-        [-113, 58],
-        [-108, 62],
-        [-103, 63],
-        [91, 63],
-        [101, 60],
-        [110, 55],
-        [114, 56],
-      ].map(([y, r]) => new THREE.Vector2(r, y));
-      this.desk.mesh(
-        new THREE.LatheGeometry(profile, 64, Math.PI / 2, Math.PI),
-        mat,
-        0,
-        0,
-        0,
-        can,
-      );
-      const art = new THREE.TextureLoader().load(
-        "/room/monster/original-500ml.jpg",
-      );
-      art.encoding = THREE.sRGBEncoding;
-      art.anisotropy =
-        this.desk.app.renderer.instance.capabilities.getMaxAnisotropy();
-      // Project the photographed can onto the matching curved silhouette.
-      // Front and rear meet at the sides; there is no overlapping label sleeve.
-      const wrap = new THREE.LatheGeometry(profile, 96, -Math.PI / 2, Math.PI);
-      const positions = wrap.attributes.position;
-      const uv = wrap.attributes.uv;
-      for (let v = 0; v < uv.count; v++) {
-        uv.setXY(
-          v,
-          0.5 + (positions.getX(v) / 126) * 0.357,
-          0.01 + ((positions.getY(v) + 116) / 232) * 0.982,
-        );
-      }
-      this.desk.mesh(
-        wrap,
-        new THREE.MeshBasicMaterial({ map: art }),
-        0,
-        0,
-        0,
-        can,
-      );
-      for (const y of [-113, 114]) {
-        this.desk.cylinder(56, 5, 0, y, 0, this.desk.silver, 56, can);
-        const rim = this.desk.mesh(
-          new THREE.TorusGeometry(57, 3, 8, 48),
-          this.desk.silver,
-          0,
-          y + 2,
-          0,
-          can,
-        );
-        rim.rotation.x = Math.PI / 2;
-      }
-      const opening = this.desk.mesh(
-        new THREE.CircleGeometry(14, 24),
-        dark,
-        0,
-        118,
-        -20,
-        can,
-      );
-      opening.rotation.x = -Math.PI / 2;
-      opening.scale.x = 0.7;
-      const tab = this.desk.mesh(
-        new THREE.TorusGeometry(12, 4, 8, 24),
-        this.desk.material(0x8ecc28, 0.5),
-        0,
-        120,
-        4,
-        can,
-      );
-      tab.rotation.x = Math.PI / 2;
-      tab.scale.y = 1.5;
       this.interactions.pickup(
         can,
         {
@@ -801,13 +771,8 @@ export default class Room {
 
   update() {
     this.roomWindow?.update();
-    const now = new Date();
-    const seconds = now.getSeconds();
-    const minutes = now.getMinutes() + seconds / 60;
-    const hours = (now.getHours() % 12) + minutes / 60;
-    [hours / 12, minutes / 60, seconds / 60].forEach((turn, i) => {
-      if (this.clockHands[i])
-        this.clockHands[i].rotation.z = -turn * Math.PI * 2;
+    clockHandAngles(new Date()).forEach((angle, i) => {
+      if (this.clockHands[i]) this.clockHands[i].rotation.z = angle;
     });
   }
 
@@ -871,39 +836,219 @@ export default class Room {
       );
       print.castShadow = false;
     }
-    this.plant(-11050, -2305, -1380);
+    this.plant(-11050, -2305, -1380, "snake");
   }
 
-  plant(x: number, floor: number, z: number) {
+  plant(
+    x: number,
+    floor: number,
+    z: number,
+    species: "rubber" | "snake" = "rubber",
+  ) {
+    const plant = new THREE.Group();
+    plant.name = species === "rubber" ? "Rubber plant" : "Snake plant";
+    plant.position.set(x, floor, z);
+    this.group.add(plant);
     const clay = this.desk.material(0xbc7856);
-    const soil = this.desk.material(0x484135);
-    const stem = this.desk.material(0x566342);
-    this.desk.cylinder(240, 520, x, floor + 260, z, clay, 320, this.group);
-    this.desk.cylinder(295, 15, x, floor + 518, z, soil, 295, this.group);
-    for (let i = 0; i < 9; i++) {
-      const angle = i * 2.4;
-      const height = 1000 + (i % 4) * 250;
-      const end = new THREE.Vector3(
-        x + Math.cos(angle) * 400,
-        floor + height,
-        z + Math.sin(angle) * 400,
+    const soil = this.desk.material(0x342c22);
+    this.desk.mesh(
+      new THREE.CylinderGeometry(320, 240, 510, 32, 1, true),
+      clay,
+      0,
+      255,
+      0,
+      plant,
+    );
+    this.desk.cylinder(300, 12, 0, 492, 0, soil, 300, plant);
+    const rim = this.desk.mesh(
+      new THREE.TorusGeometry(312, 14, 8, 48),
+      clay,
+      0,
+      508,
+      0,
+      plant,
+    );
+    rim.rotation.x = Math.PI / 2;
+
+    const snake = species === "snake";
+    const texture = this.texture((ctx) => {
+      ctx.fillStyle = snake ? "#436747" : "#31583b";
+      ctx.fillRect(0, 0, 512, 512);
+      if (snake) {
+        // Broken transverse bands and golden margins of Sansevieria Laurentii.
+        for (let row = 0; row < 38; row++) {
+          ctx.strokeStyle = row % 2 ? "#73916a" : "#294e37";
+          ctx.lineWidth = 5 + (row % 4);
+          ctx.beginPath();
+          for (let col = 0; col <= 32; col++) {
+            const px = col * 16;
+            const py = row * 14 + Math.sin(col * 1.7 + row * 2.3) * 6;
+            if (col === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.stroke();
+        }
+        ctx.fillStyle = "#b4ac62";
+        ctx.fillRect(0, 0, 25, 512);
+        ctx.fillRect(487, 0, 25, 512);
+      } else {
+        const gradient = ctx.createLinearGradient(0, 0, 512, 0);
+        gradient.addColorStop(0, "#244a30");
+        gradient.addColorStop(0.48, "#4a7047");
+        gradient.addColorStop(0.52, "#345f3c");
+        gradient.addColorStop(1, "#1d412e");
+        ctx.fillStyle = gradient;
+        ctx.fillRect(0, 0, 512, 512);
+        ctx.strokeStyle = "#6e8651";
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(256, 0);
+        ctx.lineTo(256, 512);
+        ctx.stroke();
+        ctx.strokeStyle = "rgba(146,167,106,0.28)";
+        ctx.lineWidth = 1.5;
+        for (let y = 40; y < 490; y += 42) {
+          for (const side of [-1, 1]) {
+            ctx.beginPath();
+            ctx.moveTo(256, y);
+            ctx.quadraticCurveTo(
+              256 + side * 110,
+              y + 10,
+              256 + side * 250,
+              y + 90,
+            );
+            ctx.stroke();
+          }
+        }
+      }
+    });
+    const foliage = new THREE.MeshStandardMaterial({
+      map: texture,
+      side: THREE.DoubleSide,
+      roughness: snake ? 0.7 : 0.42,
+    });
+    // A thin, folded surface with a pointed tip, rather than an ellipsoid.
+    const leaf = (length: number, width: number, bend: number) => {
+      const positions: number[] = [],
+        uvs: number[] = [],
+        indices: number[] = [];
+      const rows = 24,
+        cols = 8;
+      for (let row = 0; row <= rows; row++) {
+        const t = row / rows;
+        const profile = snake
+          ? Math.pow(Math.sin(Math.PI * (0.12 + t * 0.88)), 0.55) *
+            (1 - Math.pow(t, 10))
+          : Math.pow(Math.sin(Math.PI * t), 0.8) * (1 - t * 0.25);
+        for (let col = 0; col <= cols; col++) {
+          const across = (col / cols) * 2 - 1;
+          positions.push(
+            across * width * 0.5 * profile,
+            t * length,
+            bend * t * t +
+              Math.abs(across) * width * profile * 0.12 +
+              Math.sin(t * Math.PI * 2) * across * width * 0.055,
+          );
+          uvs.push(col / cols, t);
+          if (row < rows && col < cols) {
+            const a = row * (cols + 1) + col,
+              b = a + cols + 1;
+            indices.push(a, a + 1, b, a + 1, b + 1, b);
+          }
+        }
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute(
+        "position",
+        new THREE.Float32BufferAttribute(positions, 3),
       );
-      this.desk.line(
-        [[x, floor + 510, z], [x, floor + height - 250, z], end.toArray()],
-        13,
-        stem,
-        this.group,
+      geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
+      geometry.setIndex(indices);
+      geometry.computeVertexNormals();
+      return geometry;
+    };
+    if (snake) {
+      for (let i = 0; i < 13; i++) {
+        const angle = i * 2.39996;
+        const radius = i < 5 ? 65 : 160;
+        const length = i < 5 ? 1150 + (i % 3) * 130 : 690 + (i % 4) * 125;
+        const blade = this.desk.mesh(
+          leaf(length, 125 + (i % 3) * 18, 65 + (i % 4) * 25),
+          foliage,
+          Math.cos(angle) * radius,
+          496,
+          Math.sin(angle) * radius,
+          plant,
+        );
+        blade.rotation.set(i < 5 ? 0.07 : 0.19, angle, Math.sin(i * 4) * 0.09);
+      }
+    } else {
+      const bark = this.desk.material(0x716247);
+      const stem = this.desk.material(0x53663d);
+      for (let branch = 0; branch < 2; branch++) {
+        const direction = branch === 0 ? 1 : -1;
+        const height = branch === 0 ? 1510 : 1120;
+        this.desk.line(
+          [
+            [direction * 40, 493, 0],
+            [direction * 55, 950, 15],
+            [direction * 105, 790 + (5 * (height - 650)) / 6, 35],
+          ],
+          12,
+          bark,
+          plant,
+        );
+        for (let i = 0; i < 6; i++) {
+          const y = 700 + (i * (height - 650)) / 6;
+          const angle = i * 2.4 + branch * 1.5;
+          const origin = new THREE.Vector3(
+            direction * (45 + (y - 493) * 0.065),
+            y,
+            20,
+          );
+          const tip = origin
+            .clone()
+            .add(
+              new THREE.Vector3(
+                Math.sin(angle) * 125,
+                80,
+                Math.cos(angle) * 125,
+              ),
+            );
+          this.desk.line(
+            [
+              origin.toArray(),
+              origin
+                .clone()
+                .lerp(tip, 0.5)
+                .add(new THREE.Vector3(0, 18, 0))
+                .toArray(),
+              tip.toArray(),
+            ],
+            5,
+            stem,
+            plant,
+          );
+          const blade = this.desk.mesh(
+            leaf(410 + (i % 3) * 45, 220 + (i % 2) * 35, 120),
+            foliage,
+            tip.x,
+            tip.y,
+            tip.z,
+            plant,
+          );
+          blade.rotation.set(0.85 + (i % 3) * 0.16, angle, 0, "YXZ");
+        }
+      }
+      const bud = this.desk.mesh(
+        leaf(180, 35, 12),
+        this.desk.material(0x98674e),
+        105,
+        1510,
+        35,
+        plant,
       );
-      const leaf = this.desk.mesh(
-        new THREE.SphereGeometry(1, 12, 8),
-        this.desk.material(i % 2 ? 0x647d50 : 0x405e42),
-        end.x,
-        end.y,
-        end.z,
-        this.group,
-      );
-      leaf.scale.set(180, 370, 45);
-      leaf.rotation.set(0.25, -angle, -Math.cos(angle) * 0.6);
+      bud.rotation.z = -0.15;
     }
   }
 }

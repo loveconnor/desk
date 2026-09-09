@@ -138,6 +138,13 @@ export default class RoomInteractions {
   ) {
     this.add(object, detail.title, () => {
       if (this.held || !object.parent) return;
+      object.traverse((child) => {
+        const material = (child as THREE.Mesh).material;
+        for (const entry of Array.isArray(material) ? material : [material]) {
+          const map = (entry as THREE.MeshBasicMaterial | undefined)?.map;
+          map?.userData.ensureHighResolution?.().catch(console.error);
+        }
+      });
       this.app.camera.inspectionActive = true;
       this.held = object;
       this.angle = 0;

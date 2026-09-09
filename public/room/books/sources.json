@@ -1,0 +1,702 @@
+{
+  "note": "Actual catalog covers and bookseller photographs. UV quadrilaterals select the printed faces without synthesizing replacement artwork. Original photographs are retained unmodified at the source-provided resolution. Rights remain with their respective owners.",
+  "books": [
+    {
+      "index": 11,
+      "title": "A pattern language",
+      "isbn": "9780195019193",
+      "listing": "https://bookbot.com/g/441537/b/24060588",
+      "images": [
+        {
+          "file": "11-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/88548287.jpg"
+        },
+        {
+          "file": "11-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/88548288.jpg"
+        }
+      ]
+    },
+    {
+      "index": 12,
+      "title": "The Timeless Way of Building",
+      "isbn": "9780195024029",
+      "listing": "https://bookbot.com/g/8533845/b/24330607",
+      "images": [
+        {
+          "file": "12-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/89505885.jpg"
+        },
+        {
+          "file": "12-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/89505886.jpg"
+        },
+        {
+          "file": "12-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9780195024029-L.jpg?default=false"
+        }
+      ]
+    },
+    {
+      "index": 13,
+      "title": "The Architecture of Happiness",
+      "isbn": "9780241142493",
+      "listing": "https://bookbot.com/g/266821",
+      "images": [
+        {
+          "file": "13-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/87334428.jpg"
+        },
+        {
+          "file": "13-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/87334429.jpg"
+        },
+        {
+          "file": "13-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9780241142493-L.jpg?default=false"
+        }
+      ]
+    },
+    {
+      "index": 14,
+      "title": "Ways of seeing",
+      "isbn": "9780141035796",
+      "listing": "https://bookbot.com/g/502755/b/19556680",
+      "images": [
+        {
+          "file": "14-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/72323400.jpg"
+        },
+        {
+          "file": "14-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/72323401.jpg"
+        },
+        {
+          "file": "14-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9780141035796-L.jpg?default=false"
+        }
+      ]
+    },
+    {
+      "index": 15,
+      "title": "Interaction of color : 50th anniversary edition",
+      "isbn": "9780300179354",
+      "listing": "https://bookbot.com/g/6952210/b/7568268",
+      "images": [
+        {
+          "file": "15-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/30491839.jpg"
+        },
+        {
+          "file": "15-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/30491840.jpg"
+        },
+        {
+          "file": "15-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9780300179354-L.jpg?default=false"
+        }
+      ]
+    },
+    {
+      "index": 16,
+      "title": "A Basic Color Library: The Elements of Color",
+      "isbn": "9780442240387",
+      "listing": "https://bookbot.com/g/1243467/b/18351183",
+      "images": [
+        {
+          "file": "16-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/68071457.jpg"
+        },
+        {
+          "file": "16-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/68071458.jpg"
+        },
+        {
+          "file": "16-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9780442240387-L.jpg?default=false"
+        }
+      ]
+    },
+    {
+      "index": 17,
+      "title": "Grid systems in graphic design : a visual communication manual for graphic designers, typographers, and three dimensional designers",
+      "isbn": "9783721201451",
+      "listing": "https://bookbot.com/g/567784/b/24071455",
+      "images": [
+        {
+          "file": "17-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/88585987.jpg"
+        },
+        {
+          "file": "17-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/88585988.jpg"
+        }
+      ]
+    },
+    {
+      "index": 18,
+      "title": "The Visual Display of Quantitative Information",
+      "isbn": "9781930824133",
+      "listing": "https://bookbot.com/g/712383/b/7259305",
+      "images": [
+        {
+          "file": "18-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/29429925.jpg"
+        },
+        {
+          "file": "18-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/29429926.jpg"
+        }
+      ]
+    },
+    {
+      "index": 19,
+      "title": "Envisioning Information",
+      "isbn": "9781930824140",
+      "listing": "https://bookbot.com/g/648192/b/7259345",
+      "images": [
+        {
+          "file": "19-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/29430065.jpg"
+        },
+        {
+          "file": "19-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/29430066.jpg"
+        }
+      ]
+    },
+    {
+      "index": 20,
+      "title": "Beautiful Evidence",
+      "isbn": "9781930824164",
+      "listing": "https://bookbot.com/g/2022507/b/7259292",
+      "images": [
+        {
+          "file": "20-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/29429884.jpg"
+        },
+        {
+          "file": "20-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/29429885.jpg"
+        },
+        {
+          "file": "20-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9781930824164-L.jpg?default=false"
+        }
+      ]
+    },
+    {
+      "index": 21,
+      "title": "Universal Principles of Design",
+      "isbn": "9781592530076",
+      "listing": "https://bookbot.com/g/8394160/b/14764916",
+      "images": [
+        {
+          "file": "21-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/55477585.jpg"
+        },
+        {
+          "file": "21-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/55477586.jpg"
+        },
+        {
+          "file": "21-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9781592530076-L.jpg?default=false"
+        }
+      ]
+    },
+    {
+      "index": 22,
+      "title": "About Face",
+      "isbn": "9781568843223",
+      "listing": "https://bookbot.com/g/8240642/b/13047053",
+      "images": [
+        {
+          "file": "22-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/49543997.jpg"
+        },
+        {
+          "file": "22-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/49543998.jpg"
+        },
+        {
+          "file": "22-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9781568843223-L.jpg?default=false"
+        }
+      ]
+    },
+    {
+      "index": 23,
+      "title": "The Humane Interface",
+      "isbn": "9780201379372",
+      "listing": "https://bookbot.com/g/575738/b/9698032",
+      "images": [
+        {
+          "file": "23-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/37917728.jpg"
+        },
+        {
+          "file": "23-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/37917729.jpg"
+        },
+        {
+          "file": "23-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9780201379372-L.jpg?default=false"
+        }
+      ]
+    },
+    {
+      "index": 24,
+      "title": "Designing for emotion",
+      "isbn": "9781937557003",
+      "listing": "https://bookbot.com/g/418998/b/462852",
+      "images": [
+        {
+          "file": "24-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/1847811.jpg"
+        },
+        {
+          "file": "24-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/1847812.jpg"
+        },
+        {
+          "file": "24-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9781937557003-L.jpg?default=false"
+        }
+      ]
+    },
+    {
+      "index": 25,
+      "title": "Just Enough Research - Second Edition",
+      "isbn": "9781937557881",
+      "listing": "https://bookbot.com/g/9142612/b/20754085",
+      "images": [
+        {
+          "file": "25-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/76576068.jpg"
+        },
+        {
+          "file": "25-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/76576069.jpg"
+        }
+      ]
+    },
+    {
+      "index": 26,
+      "title": "Articulating Design Decisions",
+      "isbn": "9781491921562",
+      "listing": "https://bookbot.com/g/578863/b/2151886",
+      "images": [
+        {
+          "file": "26-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/10796369.jpg"
+        },
+        {
+          "file": "26-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/10796370.jpg"
+        },
+        {
+          "file": "26-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9781491921562-L.jpg?default=false"
+        }
+      ]
+    },
+    {
+      "index": 27,
+      "title": "Creative Selection",
+      "isbn": "9781250194466",
+      "listing": "https://bookbot.com/g/501312/b/2440357",
+      "images": [
+        {
+          "file": "27-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/11994583.jpg"
+        },
+        {
+          "file": "27-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/11994585.jpg"
+        },
+        {
+          "file": "27-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9781250194466-L.jpg?default=false"
+        }
+      ]
+    },
+    {
+      "index": 28,
+      "title": "Shape Up",
+      "isbn": "9780578370989",
+      "listing": "https://bookbot.com/g/9703498/b/24906415",
+      "images": [
+        {
+          "file": "28-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/91568177.jpg"
+        },
+        {
+          "file": "28-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/91568178.jpg"
+        }
+      ]
+    },
+    {
+      "index": 29,
+      "title": "Rework",
+      "isbn": "9780307463746",
+      "listing": "https://bookbot.com/g/418822/b/23932783",
+      "images": [
+        {
+          "file": "29-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/88095441.jpg"
+        },
+        {
+          "file": "29-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/88095442.jpg"
+        },
+        {
+          "file": "29-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9780307463746-L.jpg?default=false"
+        }
+      ]
+    },
+    {
+      "index": 30,
+      "title": "Deep Work",
+      "isbn": "9780349413686",
+      "listing": "https://bookbot.com/g/439114/b/16405181",
+      "images": [
+        {
+          "file": "30-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/61207699.jpg"
+        },
+        {
+          "file": "30-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/61207700.jpg"
+        },
+        {
+          "file": "30-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9780349413686-L.jpg?default=false"
+        }
+      ]
+    },
+    {
+      "index": 31,
+      "title": "A Philosophy of Software Design",
+      "isbn": "9781732102217",
+      "listing": "https://bookbot.com/g/3930415/b/14697169",
+      "images": [
+        {
+          "file": "31-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/55238912.jpg"
+        },
+        {
+          "file": "31-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/55238913.jpg"
+        }
+      ]
+    },
+    {
+      "index": 32,
+      "title": "Working Effectively with Legacy Code",
+      "isbn": "9780131177055",
+      "listing": "https://bookbot.com/g/537038/b/10012786",
+      "images": [
+        {
+          "file": "32-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/39012598.jpg"
+        },
+        {
+          "file": "32-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/39012599.jpg"
+        },
+        {
+          "file": "32-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9780131177055-L.jpg?default=false"
+        }
+      ]
+    },
+    {
+      "index": 33,
+      "title": "Code Complete",
+      "isbn": "9780735619678",
+      "listing": "https://bookbot.com/g/3731472/b/22325237",
+      "images": [
+        {
+          "file": "33-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/82324589.jpg"
+        },
+        {
+          "file": "33-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/82324590.jpg"
+        }
+      ]
+    },
+    {
+      "index": 34,
+      "title": "The Mythical Man-Month: Essays on Software Engineering",
+      "isbn": "9780201835953",
+      "listing": "https://bookbot.com/g/482432/b/24893117",
+      "images": [
+        {
+          "file": "34-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/91519512.jpg"
+        },
+        {
+          "file": "34-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/91519513.jpg"
+        },
+        {
+          "file": "34-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9780201835953-L.jpg?default=false"
+        }
+      ]
+    },
+    {
+      "index": 35,
+      "title": "Structure And Interpretation Of Computer Programs",
+      "isbn": "9788173715273",
+      "listing": "https://bookbot.com/g/3988034/b/11761681",
+      "images": [
+        {
+          "file": "35-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/45136506.jpg"
+        },
+        {
+          "file": "35-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/45136507.jpg"
+        },
+        {
+          "file": "35-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9788173715273-L.jpg?default=false"
+        }
+      ]
+    },
+    {
+      "index": 36,
+      "title": "Grokking Algorithms",
+      "isbn": "9781617292231",
+      "listing": "https://bookbot.com/g/3628783/b/22257001",
+      "images": [
+        {
+          "file": "36-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/82077495.jpg"
+        },
+        {
+          "file": "36-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/82077496.jpg"
+        },
+        {
+          "file": "36-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9781617292231-L.jpg?default=false"
+        }
+      ]
+    },
+    {
+      "index": 37,
+      "title": "You Don't Know JS Yet: Get Started",
+      "isbn": "9798602477429",
+      "listing": "https://bookbot.com/g/9703809/b/24909573",
+      "images": [
+        {
+          "file": "37-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/91579557.jpg"
+        },
+        {
+          "file": "37-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/91579558.jpg"
+        }
+      ]
+    },
+    {
+      "index": 38,
+      "title": "CSS Secrets",
+      "isbn": "9781449372637",
+      "listing": "https://bookbot.com/g/244911/b/10578119",
+      "images": [
+        {
+          "file": "38-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/40996361.jpg"
+        },
+        {
+          "file": "38-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/40996362.jpg"
+        },
+        {
+          "file": "38-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9781449372637-L.jpg?default=false"
+        }
+      ]
+    },
+    {
+      "index": 39,
+      "title": "HTML & CSS: design and build websites",
+      "isbn": "9781118008188",
+      "listing": "https://bookbot.com/g/651583/b/23775350",
+      "images": [
+        {
+          "file": "39-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/87532963.jpg"
+        },
+        {
+          "file": "39-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/87532964.jpg"
+        },
+        {
+          "file": "39-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9781118008188-L.jpg?default=false"
+        }
+      ]
+    },
+    {
+      "index": 40,
+      "title": "Responsive Web Design",
+      "isbn": "9781937557188",
+      "listing": "https://bookbot.com/g/420570/b/23837505",
+      "images": [
+        {
+          "file": "40-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/87756753.jpg"
+        },
+        {
+          "file": "40-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/87756754.jpg"
+        },
+        {
+          "file": "40-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9781937557188-L.jpg?default=false"
+        }
+      ]
+    },
+    {
+      "index": 41,
+      "title": "The Nature of Code",
+      "isbn": "9780985930806",
+      "listing": "https://bookbot.com/g/685753/b/3413612",
+      "images": [
+        {
+          "file": "41-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/15545340.jpg"
+        },
+        {
+          "file": "41-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/15545341.jpg"
+        },
+        {
+          "file": "41-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9780985930806-L.jpg?default=false"
+        }
+      ],
+      "originalJacket": {
+        "file": "41-original-jacket.png",
+        "url": "https://raw.githubusercontent.com/nature-of-code/The-Nature-of-Code-archive/master/cover/noc_cover_03.png",
+        "attribution": "Daniel Shiffman, The Nature of Code original print jacket"
+      }
+    },
+    {
+      "index": 42,
+      "title": "The Creative Act",
+      "isbn": "9798217061334",
+      "listing": "https://bookbot.com/g/9254212/b/21482238",
+      "images": [
+        {
+          "file": "42-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/79192468.jpg"
+        },
+        {
+          "file": "42-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/79192469.jpg"
+        }
+      ]
+    },
+    {
+      "index": 43,
+      "title": "Steal Like an Artist",
+      "isbn": "9780761169253",
+      "listing": "https://bookbot.com/g/440570/b/23165846",
+      "images": [
+        {
+          "file": "43-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/85360915.jpg"
+        },
+        {
+          "file": "43-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/85360916.jpg"
+        },
+        {
+          "file": "43-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9780761169253-L.jpg?default=false"
+        }
+      ]
+    },
+    {
+      "index": 44,
+      "title": "The War of Art",
+      "isbn": "9781936891047",
+      "listing": "https://bookbot.com/g/368982/b/295060",
+      "images": [
+        {
+          "file": "44-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/816608.jpg"
+        },
+        {
+          "file": "44-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/816609.jpg"
+        }
+      ]
+    },
+    {
+      "index": 45,
+      "title": "On Writing",
+      "isbn": "9780743455961",
+      "listing": "https://bookbot.com/g/277156/b/24768300",
+      "images": [
+        {
+          "file": "45-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/91071664.jpg"
+        },
+        {
+          "file": "45-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/91071665.jpg"
+        },
+        {
+          "file": "45-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9780743455961-L.jpg?default=false"
+        }
+      ]
+    },
+    {
+      "index": 46,
+      "title": "Bird by Bird",
+      "isbn": "9780307424983",
+      "listing": "https://bookbot.com/g/750576/b/22024163",
+      "images": [
+        {
+          "file": "46-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/81196243.jpg"
+        },
+        {
+          "file": "46-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/81196244.jpg"
+        }
+      ]
+    },
+    {
+      "index": 47,
+      "title": "The Little Prince",
+      "isbn": "9781853261589",
+      "listing": "https://bookbot.com/g/252482/b/24859025",
+      "images": [
+        {
+          "file": "47-photo-0.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/91397625.jpg"
+        },
+        {
+          "file": "47-photo-1.jpg",
+          "url": "https://rezised-images.knhbt.cz/1920x1920/91397626.jpg"
+        },
+        {
+          "file": "47-front.jpg",
+          "url": "https://covers.openlibrary.org/b/isbn/9781853261589-L.jpg?default=false"
+        }
+      ]
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import { photographedBookArtwork } from "./photographedBookArtwork";
 // Coordinates refer to unmodified source photos, clockwise from top left.
 // Keeping UV crops here preserves the actual printed artwork.
 export type ArtFace = { file: string; corners?: number[][] };
@@ -5,6 +6,7 @@ export const bookArtwork: Record<
   number,
   { front?: ArtFace; back?: ArtFace; spine?: ArtFace }
 > = {
+  ...photographedBookArtwork,
   0: {
     back: {
       file: "0-jacket.png",

@@ -1,59 +1,7 @@
+import { air75Rows } from "./Air75Layout";
+
 /** Physical codes keep the desk keys aligned even with Shift or another layout. */
-export const keyRows = [
-  [
-    "Backquote",
-    ..."1234567890".split("").map((n) => `Digit${n}`),
-    "Minus",
-    "Equal",
-    "Backspace",
-    "Escape",
-  ],
-  [
-    "Tab",
-    ..."QWERTYUIOP".split("").map((n) => `Key${n}`),
-    "BracketLeft",
-    "BracketRight",
-    "Backslash",
-    "Delete",
-  ],
-  [
-    "CapsLock",
-    ..."ASDFGHJKL".split("").map((n) => `Key${n}`),
-    "Semicolon",
-    "Quote",
-    "Enter",
-    "Home",
-    "PageUp",
-  ],
-  [
-    "ShiftLeft",
-    ..."ZXCVBNM".split("").map((n) => `Key${n}`),
-    "Comma",
-    "Period",
-    "Slash",
-    "ShiftRight",
-    "ArrowUp",
-    "End",
-    "PageDown",
-  ],
-  [
-    "ControlLeft",
-    "MetaLeft",
-    "AltLeft",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "AltRight",
-    "MetaRight",
-    "ControlRight",
-    "ArrowLeft",
-    "ArrowDown",
-    "ArrowRight",
-  ],
-];
+export const keyRows = air75Rows;
 export class KeyboardState {
   pressed = new Set<string>();
   listeners = new Set<(code: string) => void>();

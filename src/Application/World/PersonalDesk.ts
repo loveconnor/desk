@@ -1,14 +1,16 @@
 import ScreenBar from "./ScreenBar";
+import DellMonitor from "./DellMonitor";
+import NordikDeskMat from "./NordikDeskMat";
 import { DESK_WALL_OFFSET_Z } from "./deskLayout";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { keyLegendAtlas } from "../../keyboard/KeyLegends";
+import NuphyAir75 from "./NuphyAir75";
+import LogitechSpeakers from "./LogitechSpeakers";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import Application from "../Application";
 import {
   bindKeyboard,
   keyboardState,
-  keyRows,
 } from "../../keyboard/KeyboardState";
 import StandingDesk from "./StandingDesk";
 import PaperPhysics from "./PaperPhysics";
@@ -23,7 +25,7 @@ export default class PersonalDesk {
   desktop = new THREE.Group();
   lift: StandingDesk;
   screenBar: ScreenBar;
-  private resumeMaterial: THREE.MeshStandardMaterial;
+  private resumeMaterial: THREE.MeshBasicMaterial;
   private readerAmbient = NaN;
   columns: THREE.Mesh[] = [];
   chairModel = new THREE.Group();
@@ -228,110 +230,38 @@ export default class PersonalDesk {
       this.box(730, 230, 550, x, 152.5, -345, this.edge, 8);
       this.box(90, 48, 12, x, 195, -62, this.silver, 3);
     }
-    this.box(2210, 18, 1020, -170, 14, 365, this.fabric("#454642"), 35);
-    this.box(55, 12, 36, 950, 27, 575, this.material(0xb96735), 3);
+    const mat = new NordikDeskMat(
+      this.app.renderer.instance.capabilities.getMaxAnisotropy(),
+    );
+    mat.position.set(-170, 0, 365);
+    this.group.add(mat);
   }
   monitor() {
-    // Four bezel rails leave the CSS3D screen aperture transparent.
-    const z = -260,
-      cy = 950,
-      w = 1800,
-      h = 1012;
-    this.box(w + 58, 28, 78, 0, cy + h / 2 + 14, z - 25, this.black, 10);
-    this.box(w + 58, 50, 78, 0, cy - h / 2 - 25, z - 25, this.black, 10);
-    for (const x of [-w / 2 - 14, w / 2 + 14])
-      this.box(28, h, 78, x, cy, z - 25, this.black, 10);
-    this.box(1200, 650, 95, 0, 960, z - 100, this.black, 40);
-    this.box(95, 350, 100, 0, 510, -380, this.edge, 12);
-    this.box(550, 35, 320, 0, 370, -340, this.black, 25);
+    this.group.add(new DellMonitor());
     this.screenBar = new ScreenBar(this);
-    const stickerTexture = new THREE.TextureLoader().load(
-      "/branding/connor-love-sticker.svg",
-    );
-    stickerTexture.encoding = THREE.sRGBEncoding;
-    const sticker = this.mesh(
-      new THREE.PlaneGeometry(220, 43),
-      new THREE.MeshBasicMaterial({ map: stickerTexture }),
-      -715,
-      cy - h / 2 - 25,
-      z + 16,
-    );
-    sticker.name = "Connor Love monitor sticker";
-    for (const x of [-1120, 1120]) {
-      this.box(220, 500, 210, x, 590, -360, this.black, 28);
-      for (const y of [475, 700]) {
-        const disc = this.cylinder(80, 15, x, y, -247, this.edge);
-        disc.rotation.x = Math.PI / 2;
-        const cone = this.cylinder(61, 20, x, y, -232, this.black);
-        cone.rotation.x = Math.PI / 2;
-        const ring = this.mesh(
-          new THREE.TorusGeometry(79, 4, 8, 32),
-          this.silver,
-          x,
-          y,
-          -234,
-        );
-      }
-    }
-    const green = this.material(0x59ca73);
-    this.mesh(new THREE.SphereGeometry(7, 8, 8), green, -1120, 394, -246);
+    const speakers = new LogitechSpeakers(this.app.renderer.instance);
+    this.group.add(speakers);
+    speakers.ready.catch(error => console.error('Unable to load Logitech speakers', error));
   }
   accessories() {
-    // Compact keyboard with the distinctive yellow and orange accent keys.
-    const keyboard = new THREE.Group();
-    keyboard.position.set(-230, 49, 440);
+    const keyboard = new NuphyAir75(this.app.renderer.instance);
+    // Model millimeters to the same 22.5 units/cm used by the mouse and mat.
+    keyboard.scale.setScalar(2.25);
+    keyboard.position.set(-230, NordikDeskMat.surfaceY, 440);
     keyboard.rotation.y = -0.035;
     this.group.add(keyboard);
-    this.box(940, 40, 345, 0, 0, 0, this.black, 22, keyboard);
-    const legends = keyLegendAtlas(this.app.renderer.instance);
-    const makeKey = (
-      code: string,
-      x: number,
-      z: number,
-      width = 51,
-      mat = this.edge,
-    ) => {
-      const key = new THREE.Group();
-      key.name = `Keycap ${code}`;
-      key.position.set(x, 29, z);
-      keyboard.add(key);
-      this.box(width, 22, 51, 0, 0, 0, mat, 5, key);
-      if (code !== "Space") {
-        const legend = legends(code);
-        legend.position.y = 11.2;
-        legend.rotation.x = -Math.PI / 2;
-        key.add(legend);
-      }
-      this.keys.set(code, key);
-    };
-    keyRows.forEach((row, r) =>
-      row.forEach((code, c) => {
-        if (!code) return;
-        const mat =
-          r === 0 && c === 13
-            ? this.material(0xf3c84e)
-            : r === 0 && c === 14
-              ? this.material(0xe96a3a)
-              : this.edge;
-        makeKey(code, -424 + c * 60, -133 + r * 63, 51, mat);
-      }),
-    );
-    makeKey("Space", -94, 119, 350);
+    this.keys = keyboard.keys;
     this.mxMasterMouse();
     const texture = new THREE.TextureLoader().load("/resume/preview.png");
     texture.encoding = THREE.sRGBEncoding;
     texture.anisotropy =
       this.app.renderer.instance.capabilities.getMaxAnisotropy();
     const physics = new PaperPhysics();
-    // Lit paper responds to the ScreenBar and room lights. A small, textured
-    // fill preserves printed contrast at night without making a glowing page.
-    this.resumeMaterial = new THREE.MeshStandardMaterial({
+    // Keep ink contrast independent of direct lights. Bounded ambient tinting
+    // below matches the reader without letting the ScreenBar bleach the print.
+    this.resumeMaterial = new THREE.MeshBasicMaterial({
       map: texture,
-      roughness: 1,
-      metalness: 0,
-      emissive: 0xf5e5cc,
-      emissiveMap: texture,
-      emissiveIntensity: 0.18,
+      toneMapped: false,
       side: THREE.DoubleSide,
     });
     const paper = this.mesh(physics.geometry, this.resumeMaterial, 1330, 3, 440);
@@ -482,7 +412,7 @@ export default class PersonalDesk {
   mxMasterMouse() {
     const mouse = new THREE.Group();
     mouse.name = "Logitech MX Master 4 — official pale grey model";
-    mouse.position.set(545, 24, 460);
+    mouse.position.set(545, NordikDeskMat.surfaceY + 1, 460);
     mouse.rotation.y = -0.1;
     this.group.add(mouse);
     new GLTFLoader().load("/room/mouse/mx-master-4.glb", ({ scene }) => {
@@ -712,7 +642,11 @@ export default class PersonalDesk {
     const ambient = THREE.MathUtils.clamp(
       this.daylight.intensity + (this.app.world?.room?.lampOn ? 0.14 : 0), 0, 1,
     );
-    this.resumeMaterial.emissiveIntensity = 0.03 + (1 - ambient) * 0.17;
+    this.resumeMaterial.color.setRGB(
+      0.72 + ambient * 0.28,
+      0.69 + ambient * 0.31,
+      0.64 + ambient * 0.36,
+    );
     // Carry the room's warmth into the enlarged reader without sacrificing
     // document contrast in the darkest environment.
     if (ambient !== this.readerAmbient) {
@@ -727,7 +661,7 @@ export default class PersonalDesk {
     this.rollChair(dt);
     let moving = false;
     this.keys.forEach((key, code) => {
-      const target = keyboardState.pressed.has(code) ? 19 : 29;
+      const target = key.userData.restY - (keyboardState.pressed.has(code) ? key.userData.travel : 0);
       if (Math.abs(target - key.position.y) < 0.01) return;
       key.position.y += (target - key.position.y) * (1 - Math.exp(-45 * dt));
       if (Math.abs(target - key.position.y) < 0.01) key.position.y = target;

@@ -1,3 +1,6 @@
+import CurvedDesktop from "./CurvedDesktop";
+import { monitorSag } from "./monitorLayout";
+import { MONITOR } from "./monitorLayout";
 import { DESK_WALL_OFFSET_Z } from "./deskLayout";
 import * as THREE from "three";
 import { CSS3DObject } from "three/examples/jsm/renderers/CSS3DRenderer.js";
@@ -9,7 +12,7 @@ import Sizes from "../Utils/Sizes";
 import Camera from "../Camera/Camera";
 import EventEmitter from "../Utils/EventEmitter";
 
-const SCREEN_SIZE = { w: 1800, h: 1012 };
+const SCREEN_SIZE = { w: MONITOR.screenWidth, h: MONITOR.screenHeight };
 const IFRAME_PADDING = 0;
 const IFRAME_SIZE = {
   w: SCREEN_SIZE.w - IFRAME_PADDING,
@@ -17,6 +20,7 @@ const IFRAME_SIZE = {
 };
 
 export default class MonitorScreen extends EventEmitter {
+  curvedDesktop?: CurvedDesktop;
   movingSurfaces: THREE.Object3D[] = [];
   appliedHeight = 0;
   application: Application;
@@ -46,7 +50,11 @@ export default class MonitorScreen extends EventEmitter {
     this.resources = this.application.resources;
     this.screenSize = new THREE.Vector2(SCREEN_SIZE.w, SCREEN_SIZE.h);
     this.camera = this.application.camera;
-    this.position = new THREE.Vector3(0, 950, -260 + DESK_WALL_OFFSET_Z);
+    this.position = new THREE.Vector3(
+      0,
+      MONITOR.screenY,
+      MONITOR.z + DESK_WALL_OFFSET_Z,
+    );
     this.rotation = new THREE.Euler(0, 0, 0);
     this.videoTextures = {};
     this.mouseClickInProgress = false;
@@ -56,7 +64,7 @@ export default class MonitorScreen extends EventEmitter {
     this.initializeScreenEvents();
     this.createIframe();
     const maxOffset = this.createTextureLayers();
-    this.createEnclosingPlanes(maxOffset);
+    // The curved bezel closes the display perimeter.
     this.createPerspectiveDimmer(maxOffset);
   }
 
@@ -225,45 +233,65 @@ export default class MonitorScreen extends EventEmitter {
    * @param element the element to create the css plane for
    */
   createCssPlane(element: HTMLElement) {
-    // Create CSS3D object
+    // One continuous browser surface. The SVG projection follows the cylinder
+    // without slicing, duplicating DOM, or breaking native hover effects.
+    // Rasterize the browser at twice the scene resolution before projection.
+    element.style.width = this.screenSize.width * 2 + "px";
+    element.style.height = this.screenSize.height * 2 + "px";
+    (element.querySelector("iframe")! as HTMLIFrameElement).style.setProperty(
+      "zoom",
+      "2",
+    );
     const object = new CSS3DObject(element);
-
-    // copy monitor position and rotation
+    object.scale.setScalar(0.5);
     object.position.copy(this.position);
-    object.rotation.copy(this.rotation);
-
-    // Add to CSS scene
     this.cssScene.add(object);
+    this.application.renderer.cssInstance.domElement.firstElementChild!.appendChild(
+      element,
+    );
     this.movingSurfaces.push(object);
+    const iframe = element.querySelector("iframe")!;
+    iframe.addEventListener(
+      "load",
+      () => {
+        this.curvedDesktop = new CurvedDesktop(
+          iframe,
+          this.position,
+          this.screenSize.width,
+          this.screenSize.height,
+        );
+        this.curvedDesktop.update(this.camera.instance);
+      },
+      { once: true },
+    );
+    const hole = new THREE.Mesh(
+      this.curvedGeometry(),
+      new THREE.MeshBasicMaterial({
+        color: 0,
+        transparent: true,
+        opacity: 0,
+        blending: THREE.NoBlending,
+        toneMapped: false,
+        side: THREE.DoubleSide,
+      }),
+    );
+    hole.position.copy(this.position);
+    hole.renderOrder = -100;
+    this.scene.add(hole);
+    this.movingSurfaces.push(hole);
+  }
 
-    // Create GL plane
-    const material = new THREE.MeshBasicMaterial({
-      color: 0x000000,
-      toneMapped: false,
-    });
-    material.side = THREE.DoubleSide;
-    material.opacity = 0;
-    material.transparent = true;
-    // NoBlending allows the GL plane to occlude the CSS plane
-    material.blending = THREE.NoBlending;
-
-    // Create plane geometry
+  curvedGeometry() {
     const geometry = new THREE.PlaneGeometry(
       this.screenSize.width,
       this.screenSize.height,
+      32,
+      1,
     );
-
-    // Create the GL plane mesh
-    const mesh = new THREE.Mesh(geometry, material);
-
-    // Copy the position, rotation and scale of the CSS plane to the GL plane
-    mesh.position.copy(object.position);
-    mesh.rotation.copy(object.rotation);
-    mesh.scale.copy(object.scale);
-
-    // Add to gl scene
-    this.scene.add(mesh);
-    this.movingSurfaces.push(mesh);
+    const p = geometry.attributes.position;
+    for (let i = 0; i < p.count; i++) p.setZ(i, monitorSag(p.getX(i)));
+    geometry.computeVertexNormals();
+    return geometry;
   }
 
   /**
@@ -357,16 +385,14 @@ export default class MonitorScreen extends EventEmitter {
     const material = new THREE.MeshBasicMaterial({
       map: texture,
       blending: blendingMode,
+      depthWrite: false,
       side: THREE.DoubleSide,
       opacity,
       transparent: true,
     });
 
     // Create geometry
-    const geometry = new THREE.PlaneGeometry(
-      this.screenSize.width,
-      this.screenSize.height,
-    );
+    const geometry = this.curvedGeometry();
 
     // Create mesh
     const mesh = new THREE.Mesh(geometry, material);
@@ -456,12 +482,10 @@ export default class MonitorScreen extends EventEmitter {
       color: 0x000000,
       transparent: true,
       blending: THREE.AdditiveBlending,
+      depthWrite: false,
     });
 
-    const plane = new THREE.PlaneGeometry(
-      this.screenSize.width,
-      this.screenSize.height,
-    );
+    const plane = this.curvedGeometry();
 
     const mesh = new THREE.Mesh(plane, material);
 
@@ -497,8 +521,9 @@ export default class MonitorScreen extends EventEmitter {
     const height = this.application.world.computerSetup.lift.height;
     const delta = height - this.appliedHeight;
     for (const surface of this.movingSurfaces) surface.position.y += delta;
-    this.position.y = 950 + height;
+    this.position.y = MONITOR.screenY + height;
     this.appliedHeight = height;
+    this.curvedDesktop?.update(this.camera.instance);
     if (this.dimmingPlane) {
       const planeNormal = new THREE.Vector3(0, 0, 1);
       const viewVector = new THREE.Vector3();

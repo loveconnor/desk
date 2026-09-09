@@ -1,3 +1,4 @@
+import { MONITOR } from "./monitorLayout";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import PersonalDesk from "./PersonalDesk";
@@ -44,7 +45,7 @@ export default class ScreenBar {
 
   constructor(private desk: PersonalDesk) {
     this.group.name = "BenQ ScreenBar — tap to adjust";
-    this.group.position.set(0, 1530, -205);
+    this.group.position.set(0, MONITOR.top + 46, MONITOR.z + 55);
     desk.group.add(this.group);
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");

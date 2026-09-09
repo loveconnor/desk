@@ -620,7 +620,8 @@ function Desktop() {
     if (w.maximized || (e.target as HTMLElement).closest("button")) return;
     e.preventDefault();
     const el = e.currentTarget as HTMLElement;
-    el.setPointerCapture(e.pointerId);
+    // Mirrored curved-display input is synthetic and has no native capture.
+    if (e.isTrusted) el.setPointerCapture(e.pointerId);
     const x = e.clientX,
       y = e.clientY;
     const move = (ev: PointerEvent) =>
