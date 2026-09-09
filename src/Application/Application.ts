@@ -99,7 +99,8 @@ export default class Application {
 
   destroy() {
     this.sizes.off("resize");
-    this.time.off("tick");
+    this.time.destroy();
+    this.world.audioManager?.audioSources.ambience.destroy();
 
     // Traverse the whole scene
     this.scene.traverse((child) => {
@@ -120,6 +121,9 @@ export default class Application {
     });
 
     this.renderer.instance.dispose();
+    this.renderer.overlayInstance.dispose();
+    this.renderer.overlay.geometry.dispose();
+    (this.renderer.overlay.material as THREE.Material).dispose();
 
     if (this.debug.active) this.debug.ui.destroy();
   }

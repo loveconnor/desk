@@ -72,6 +72,7 @@ export default class RoomWindow {
   private collectedExtras = false;
   private bounce = new THREE.AmbientLight(0xffcc99, 0);
   private last = performance.now();
+  private lightingKey = "";
   private enabled = false;
   private basics = new Map<THREE.MeshBasicMaterial, THREE.Color>();
 
@@ -323,6 +324,18 @@ export default class RoomWindow {
     );
     if (Math.abs(this.coverage - this.target) < 0.0005)
       this.coverage = this.target;
+    // The sun only needs a new sample each second. Blinds and lamp controls
+    // still update on every animation frame while their state changes.
+    const date = this.dateOverride ?? new Date();
+    const sample = this.dateOverride ? date.getTime() : Math.floor(date.getTime() / 1000);
+    const lightingKey = `${sample}:${this.coverage}:${this.room.lampOn}:${this.basics.size}:${this.city.ready}`;
+    if (
+      Math.abs(before - this.coverage) > 0.0001 ||
+      Math.floor(now / 15000) !== Math.floor((now - dt * 1000) / 15000)
+    )
+      this.desk.app.renderer.instance.shadowMap.needsUpdate = true;
+    if (lightingKey === this.lightingKey) return;
+    this.lightingKey = lightingKey;
     const spacing = 4 + this.coverage * 41.6;
     this.slats.forEach((slat, i) => {
       slat.position.y = 2190 - i * spacing;
@@ -333,7 +346,7 @@ export default class RoomWindow {
       cord.scale.y = length / 220;
       cord.position.y = 2220 - length / 2;
     });
-    const sun = nycSun(this.dateOverride ?? new Date());
+    const sun = nycSun(date);
     const altitude = THREE.MathUtils.radToDeg(sun.altitude);
     this.daylight = THREE.MathUtils.smoothstep(altitude, -7, 35);
     const transmission = Math.pow(1 - this.coverage, 1.7);
@@ -361,11 +374,6 @@ export default class RoomWindow {
     this.basics.forEach((color, material) =>
       material.color.copy(color).multiplyScalar(glow),
     );
-    if (
-      Math.abs(before - this.coverage) > 0.0001 ||
-      Math.floor(now / 15000) !== Math.floor((now - dt * 1000) / 15000)
-    )
-      this.desk.app.renderer.instance.shadowMap.needsUpdate = true;
   }
 }
 function roomBrightness(daylight: number, lamp: boolean) {

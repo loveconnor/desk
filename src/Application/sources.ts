@@ -1,4 +1,5 @@
 const sources: Resource[] = [
+  { name: "doorOpen", type: "audio", path: "audio/door/open.mp3" },
   {
     name: "computerSetupModel",
     type: "gltfModel",
@@ -80,14 +81,14 @@ const sources: Resource[] = [
     path: "audio/keyboard/key_6.mp3",
   },
   {
-    name: "startup",
+    name: "apartmentCity",
     type: "audio",
-    path: "audio/startup/startup.mp3",
+    path: "audio/atmosphere/apartment-city.wav",
   },
   {
-    name: "office",
+    name: "apartmentRoom",
     type: "audio",
-    path: "audio/atmosphere/office.mp3",
+    path: "audio/atmosphere/apartment-room.wav",
   },
   {
     name: "ccType",

@@ -1,11 +1,14 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-room-loading="true">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="/entry.css" />
     <style>
+      html[data-room-loading] .desktop-shortcut { display: none; }
+      .portfolio-arrow { width: 13px; height: 13px; }
       body {
-        background-color: rgb(0, 0, 0);
+        background-color: #243b34;
         margin: 0;
       }
 
@@ -69,7 +72,7 @@
       name="description"
       content="Connor Love is a freelance web developer in Columbus, Ohio. Explore his work through an interactive 3D desktop."
     />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#243b34" />
     <link rel="icon" href="/favicon.svg" />
     <link rel="canonical" href="https://desk.connorlove.com/" />
     <meta property="og:title" content="Connor Love — Interactive Portfolio" />
@@ -82,6 +85,14 @@
   </head>
 
   <body>
+    <section id="boot-screen" aria-label="Loading Connor's workspace">
+      <div class="entry-content">
+        <h1>Connor Love</h1>
+        <div class="entry-progress-label"><span id="boot-status">Loading</span><span id="boot-percent">0%</span></div>
+        <div class="entry-progress" role="progressbar" aria-label="Loading workspace" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span></span></div>
+        <a class="entry-skip" href="/desktop.html">Open desktop</a>
+      </div>
+    </section>
     <div id="css"></div>
     <div id="webgl"></div>
     <div id="overlay"></div>
@@ -116,6 +127,8 @@
       ><span class="portfolio-label">Open desktop</span>
       <svg
         class="portfolio-arrow"
+        width="13"
+        height="13"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"

@@ -64,6 +64,12 @@ export default class Entrance {
     desk.app.renderer.instance.shadowMap.needsUpdate = true;
   }
   open() {
+    this.desk.app.world.audioManager.playAudio("doorOpen", {
+      volume: 0.45,
+      position: new THREE.Vector3(-6550, 0, 16135),
+      refDistance: 7000,
+      filter: { type: "lowpass", frequency: 6500 },
+    });
     this.swing(Math.PI * 0.54);
   }
   close(done: () => void) {

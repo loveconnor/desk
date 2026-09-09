@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Application from "../../Application";
 import eventBus from "../EventBus";
 
@@ -12,6 +12,17 @@ export default function LoadingScreen() {
   const [finished, setFinished] = useState(false);
   const started = useRef(false);
   const ready = progress >= 1;
+  useLayoutEffect(() => {
+    const boot = document.getElementById("boot-screen");
+    if (!boot) return;
+    const percent = Math.min(100, Math.max(0, Math.round(progress * 100)));
+    boot.hidden = ready;
+    boot.querySelector(".entry-progress")?.setAttribute("aria-valuenow", String(percent));
+    const fill = boot.querySelector<HTMLElement>(".entry-progress > span");
+    if (fill) fill.style.transform = `scaleX(${percent / 100})`;
+    const label = document.getElementById("boot-percent");
+    if (label) label.textContent = `${percent}%`;
+  }, [progress, ready]);
   useEffect(() => {
     document.documentElement.dataset.roomLoading = "true";
     const onProgress = (event: Event) =>

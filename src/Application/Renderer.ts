@@ -3,7 +3,6 @@ import { CSS3DRenderer } from "three/examples/jsm/renderers/CSS3DRenderer.js";
 import Application from "./Application";
 import Sizes from "./Utils/Sizes";
 import Camera from "./Camera/Camera";
-import UIEventBus from "./UI/EventBus";
 // @ts-ignore
 import screenVert from "./Shaders/screen/vertex.glsl?raw";
 // @ts-ignore
@@ -23,6 +22,7 @@ export default class Renderer {
   instance: THREE.WebGLRenderer;
   cssInstance: CSS3DRenderer;
   raiseExposure: boolean;
+  private projectionKey = "";
   uniforms: {
     [uniform: string]: THREE.IUniform<any>;
   };
@@ -43,7 +43,7 @@ export default class Renderer {
     this.instance = new THREE.WebGLRenderer({
       antialias: true,
       alpha: true,
-      powerPreference: "high-performance",
+      powerPreference: "default",
     });
     // Settings
     // this.instance.physicallyCorrectLights = true;
@@ -111,7 +111,13 @@ export default class Renderer {
   }
 
   update() {
-    this.application.camera.instance.updateProjectionMatrix();
+    const camera = this.camera.instance;
+    const projectionKey = [camera.fov, camera.aspect, camera.near, camera.far,
+      camera.zoom, camera.filmGauge, camera.filmOffset, JSON.stringify(camera.view)].join(":");
+    if (projectionKey !== this.projectionKey) {
+      camera.updateProjectionMatrix();
+      this.projectionKey = projectionKey;
+    }
     if (this.uniforms) {
       this.uniforms.u_time.value = Math.sin(this.time.current * 0.01);
     }
@@ -122,7 +128,8 @@ export default class Renderer {
       .inspectionActive
       ? "hidden"
       : "visible";
-    this.overlayInstance.render(this.overlayScene, this.camera.instance);
+    if (!this.camera.inspectionActive)
+      this.overlayInstance.render(this.overlayScene, this.camera.instance);
     this.overlay.position.copy(this.camera.instance.position);
   }
 }

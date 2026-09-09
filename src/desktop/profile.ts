@@ -6,7 +6,7 @@ export const profile = {
   email: "connor@connorlove.com",
   github: "https://github.com/loveconnor",
   linkedin: "https://www.linkedin.com/in/loveconnor/",
-  twitter: "https://twitter.com/cando145",
+  twitter: "https://x.com/connorlove_dev",
   calendar: "https://cal.com/loveconnor",
   website: "https://www.connorlove.com",
   skills: [

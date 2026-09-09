@@ -3,9 +3,9 @@ import Application from "../Application";
 import { AmbienceAudio, ComputerAudio } from "./AudioSources";
 import UIEventBus from "../UI/EventBus";
 
-const POS_DEBUG = false;
 const DEFAULT_REF_DISTANCE = 10000;
 export default class Audio {
+  private nextAudioId = 0;
   application: Application;
   listener: THREE.AudioListener;
   context: AudioContext;
@@ -66,7 +66,7 @@ export default class Audio {
 
     // Setup
     const buffer = this.loadedAudio[sourceName];
-    const poolKey = sourceName + "_" + Object.keys(this.audioPool).length;
+    const poolKey = sourceName + "_" + this.nextAudioId++;
 
     let audio: THREE.Audio<any> | THREE.PositionalAudio = new THREE.Audio(
       this.listener,
@@ -75,28 +75,11 @@ export default class Audio {
     if (options.position) {
       audio = new THREE.PositionalAudio(this.listener);
 
-      // @ts-ignore
-      audio.setRefDistance(options.refDistance || DEFAULT_REF_DISTANCE);
-      // @ts-ignore
-      // audio.setDistanceModel('linear');
-
-      const extraMaterialOptions = !POS_DEBUG
-        ? {
-            transparent: true,
-            opacity: 0,
-          }
-        : {};
-
-      const sphere = new THREE.SphereGeometry(100, 8, 8);
-      const material = new THREE.MeshBasicMaterial({
-        color: 0xff0000,
-        ...extraMaterialOptions,
-      });
-      const mesh = new THREE.Mesh(sphere, material);
-
-      mesh.position.copy(options.position);
-      mesh.name = poolKey;
-      this.scene.add(mesh);
+      (audio as THREE.PositionalAudio).setRefDistance(options.refDistance ?? DEFAULT_REF_DISTANCE);
+      audio.position.copy(options.position);
+      audio.name = poolKey;
+      this.scene.add(audio);
+      audio.updateMatrixWorld(true);
     }
     audio.setBuffer(buffer);
 
@@ -112,7 +95,7 @@ export default class Audio {
 
     // Set options
     audio.setLoop(options.loop ? true : false);
-    audio.setVolume(options.volume || 1);
+    audio.setVolume(options.volume ?? 1);
 
     audio.play();
 
@@ -134,12 +117,10 @@ export default class Audio {
     if (audio.source) {
       audio.source.onended = () => {
         delete this.audioPool[poolKey];
-        if (options.position) {
-          const positionalObject = this.scene.getObjectByName(poolKey);
-          if (positionalObject) {
-            this.scene.remove(positionalObject);
-          }
-        }
+        audio.onEnded();
+        audio.disconnect();
+        audio.gain.disconnect();
+        audio.removeFromParent();
       };
       this.audioPool[poolKey] = audio;
     }

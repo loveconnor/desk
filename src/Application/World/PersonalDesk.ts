@@ -24,6 +24,7 @@ export default class PersonalDesk {
   lift: StandingDesk;
   screenBar: ScreenBar;
   private resumeMaterial: THREE.MeshStandardMaterial;
+  private readerAmbient = NaN;
   columns: THREE.Mesh[] = [];
   chairModel = new THREE.Group();
   casters: THREE.Group[] = [];
@@ -714,8 +715,11 @@ export default class PersonalDesk {
     this.resumeMaterial.emissiveIntensity = 0.03 + (1 - ambient) * 0.17;
     // Carry the room's warmth into the enlarged reader without sacrificing
     // document contrast in the darkest environment.
-    document.documentElement.style.setProperty("--paper-reader-brightness", String(0.82 + ambient * 0.18));
-    document.documentElement.style.setProperty("--paper-reader-sepia", String((1 - ambient) * 0.08));
+    if (ambient !== this.readerAmbient) {
+      this.readerAmbient = ambient;
+      document.documentElement.style.setProperty("--paper-reader-brightness", String(0.82 + ambient * 0.18));
+      document.documentElement.style.setProperty("--paper-reader-sepia", String((1 - ambient) * 0.08));
+    }
     this.lift.update();
     const now = performance.now();
     const dt = Math.min((now - this.lastKeyFrame) / 1000, 0.05);

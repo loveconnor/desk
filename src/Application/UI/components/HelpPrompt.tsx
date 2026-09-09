@@ -1,109 +1,105 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-// import eventBus from '../EventBus';
-import { motion } from "framer-motion";
-import UIEventBus from "../EventBus";
+import { useEffect } from "react";
+import * as THREE from "three";
+import Application from "../../Application";
 
 const HELP_TEXT = "Click the desk to move closer";
 
-type HelpPromptProps = {};
-
-const HelpPrompt: React.FC<HelpPromptProps> = () => {
-  const [helpText, setHelpText] = useState("");
-  const [visible, setVisible] = useState(true);
-  const visRef = useRef(visible);
-
-  const typeHelpText = (i: number, curText: string) => {
-    if (i < HELP_TEXT.length && visRef.current) {
-      setTimeout(
-        () => {
-          window.postMessage(
-            { type: "keydown", key: `_AUTO_${HELP_TEXT[i]}` },
-            "*",
-          );
-
-          setHelpText(curText + HELP_TEXT[i]);
-          typeHelpText(i + 1, curText + HELP_TEXT[i]);
-        },
-        Math.random() * 120 + 50,
-      );
-    }
-  };
-
-  // make a document listener to listen to clicks
-
+/** A temporary floor projection in the clear space in front of the desk. */
+export default function HelpPrompt() {
   useEffect(() => {
-    const timer = setTimeout(() => {
-      typeHelpText(0, "");
-    }, 500);
-    const hide = () => setVisible(false);
+    const app = new Application();
+    const canvas = document.createElement("canvas");
+    canvas.width = 1024;
+    canvas.height = 160;
+    const context = canvas.getContext("2d")!;
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.encoding = THREE.sRGBEncoding;
+    texture.anisotropy = app.renderer.instance.capabilities.getMaxAnisotropy();
+    const night = app.world.room.roomWindow.daylight < 0.2;
+    const inkOpacity = night ? 0.6 : 0.8;
+    const material = new THREE.MeshStandardMaterial({
+      map: texture,
+      roughness: 1,
+      metalness: 0,
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: inkOpacity,
+      depthWrite: false,
+      alphaTest: 0.02,
+      // Let the wood show through, with only a little fill in the night scene.
+      emissive: 0xffffff,
+      emissiveMap: texture,
+      emissiveIntensity: night ? 0.12 : 0,
+    });
+    const geometry = new THREE.PlaneGeometry(3800, 590);
+    const note = new THREE.Mesh(geometry, material);
+    note.name = "Desk instruction — floor projection";
+    note.position.set(-2000, -2311, 3050);
+    note.rotation.x = -Math.PI / 2;
+    note.receiveShadow = true;
+    // Transparent parts of the projection must not intercept scene clicks.
+    note.raycast = () => {};
+    app.scene.add(note);
+
+    const draw = (count: number) => {
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.font = '400 60px "Love Sans", sans-serif';
+      context.textAlign = "left";
+      context.textBaseline = "middle";
+      const text = HELP_TEXT.slice(0, count);
+      const left = (canvas.width - context.measureText(HELP_TEXT).width) / 2;
+      context.fillStyle = night ? "#c9b28c" : "#493323";
+      context.fillText(text, left, 80);
+      texture.needsUpdate = true;
+    };
+    draw(0);
+    let count = 0;
+    let dismissed = false;
+    let disposed = false;
+    let fadeStart = 0;
+    let timer: ReturnType<typeof setTimeout>;
+    const type = () => {
+      if (dismissed || disposed) return;
+      draw(++count);
+      if (count < HELP_TEXT.length)
+        timer = setTimeout(type, Math.random() * 120 + 50);
+    };
+    const begin = () => {
+      if (!disposed && !dismissed) timer = setTimeout(type, 500);
+    };
+    // Canvas does not redraw itself when a web font arrives.
+    void document.fonts.load('400 60px "Love Sans"').then(begin, begin);
+
+    const dispose = () => {
+      if (disposed) return;
+      disposed = true;
+      clearTimeout(timer);
+      app.time.off("tick.deskprompt");
+      note.removeFromParent();
+      geometry.dispose();
+      texture.dispose();
+      material.dispose();
+    };
+    const hide = () => {
+      if (dismissed || disposed) return;
+      dismissed = true;
+      clearTimeout(timer);
+      fadeStart = performance.now();
+      app.time.on("tick.deskprompt", () => {
+        const progress = Math.min(1, (performance.now() - fadeStart) / 500);
+        material.opacity = inkOpacity * (1 - progress);
+        if (progress === 1) dispose();
+      });
+    };
     document.addEventListener("mousedown", hide);
     document.addEventListener("enterMonitor", hide);
     document.addEventListener("inspectRoomObject", hide);
     return () => {
-      clearTimeout(timer);
-      visRef.current = false;
       document.removeEventListener("mousedown", hide);
       document.removeEventListener("enterMonitor", hide);
       document.removeEventListener("inspectRoomObject", hide);
+      dispose();
     };
   }, []);
-
-  useEffect(() => {
-    if (visible == false) {
-      window.postMessage({ type: "keydown", key: `_AUTO_` }, "*");
-    }
-    visRef.current = visible;
-  }, [visible]);
-
-  return helpText.length > 0 ? (
-    <motion.div
-      variants={vars}
-      animate={visible ? "visible" : "hide"}
-      style={styles.container}
-    >
-      <p>{helpText}</p>
-      <div style={styles.blinkingContainer}>
-        <div className="blinking-cursor" />
-      </div>
-    </motion.div>
-  ) : (
-    <></>
-  );
-};
-
-const vars = {
-  visible: {
-    opacity: 1,
-  },
-  hide: {
-    y: 12,
-    opacity: 0,
-    transition: {
-      duration: 0.5,
-      ease: "easeOut",
-    },
-  },
-};
-
-const styles: StyleSheetCSS = {
-  container: {
-    position: "absolute",
-    bottom: 64,
-    background: "black",
-    padding: 4,
-    paddingLeft: 16,
-    paddingRight: 16,
-    textAlign: "center",
-    display: "flex",
-    alignItems: "flex-end",
-  },
-  blinkingContainer: {
-    // width: 100,
-    // height: 100,
-    marginLeft: 8,
-    paddingBottom: 2,
-    paddingRight: 4,
-  },
-};
-
-export default HelpPrompt;
+  return null;
+}

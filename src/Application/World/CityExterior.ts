@@ -1,11 +1,13 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import PersonalDesk from "./PersonalDesk";
+import { mergeBufferGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 /** Independent exterior lighting: blinds darken the room, never the city. */
 export default class CityExterior {
   group = new THREE.Group();
   ready = false;
+  private lastDay = NaN;
   private materials = new Map<THREE.MeshBasicMaterial, THREE.Color>();
   sun = new THREE.DirectionalLight(0xffefd9, 1.6);
   ambient = new THREE.HemisphereLight(0xbfdcff, 0x6c6261, 1);
@@ -104,21 +106,26 @@ export default class CityExterior {
           model.name = `City block ${row}-${col}: ${names[index]}`;
           this.group.add(model);
           // Repeated warm windows remain legible at night without lighting the room.
+          // Windows are static and share a material. Keep one batch per block
+          // so the renderer can still cull buildings outside the camera view.
+          const windowGeometry: THREE.BufferGeometry[] = [];
           const rows = Math.min(24, Math.floor(height / 350));
           for (let level = 1; level < rows; level += 2)
             for (let w = 0; w < 4; w++) {
               if ((level * 3 + w + col) % 3 === 0) continue;
-              const light = new THREE.Mesh(
-                new THREE.PlaneGeometry(110, 130),
-                this.windows,
-              );
-              light.position.set(
+              const geometry = new THREE.PlaneGeometry(110, 130);
+              geometry.translate(
                 x - 800 + w * 480,
                 -5400 + level * 350,
                 z + (size.z * scale) / 2 + 4,
               );
-              this.group.add(light);
+              windowGeometry.push(geometry);
             }
+          const merged = mergeBufferGeometries(windowGeometry);
+          windowGeometry.forEach((geometry) => geometry.dispose());
+          const windows = new THREE.Mesh(merged, this.windows);
+          windows.name = `City windows ${row}-${col}`;
+          this.group.add(windows);
         }
       this.setLayers();
       this.ready = true;
@@ -126,6 +133,7 @@ export default class CityExterior {
     this.setLayers();
   }
   private setLayers() {
+    this.lastDay = NaN;
     this.group.traverse((object) => {
       object.layers.set(1);
       if (!(object instanceof THREE.Mesh)) return;
@@ -167,6 +175,8 @@ export default class CityExterior {
     });
   }
   update(day: number) {
+    if (day === this.lastDay) return;
+    this.lastDay = day;
     this.materials.forEach((color, material) =>
       material.color.copy(color).multiplyScalar(0.035 + day * 0.965),
     );

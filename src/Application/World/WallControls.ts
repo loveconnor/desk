@@ -231,7 +231,12 @@ export default class WallControls {
       b.texture.needsUpdate = true;
     }
   }
+  private clockSecond = -1;
+
   update() {
+    const second = Math.floor(Date.now() / 1000);
+    if (second === this.clockSecond) return;
+    this.clockSecond = second;
     const time = new Date().toLocaleTimeString([], {
       hour: "2-digit",
       minute: "2-digit",
