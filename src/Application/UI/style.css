@@ -197,3 +197,25 @@ br {
 @media (max-width: 600px) {
   .room-controls { left: 12px; bottom: 76px; }
 }
+
+.screenbar-panel {
+  position: fixed; right: 24px; bottom: 82px; z-index: 30;
+  width: min(250px, calc(100vw - 32px)); box-sizing: border-box;
+  padding: 16px; border-radius: 12px; border: 1px solid #d3c7b0;
+  background: #f2ecdf; color: #293b34; box-shadow: 0 8px 30px #101e2326;
+  font: 13px/1.4 -apple-system, BlinkMacSystemFont, sans-serif;
+  pointer-events: auto;
+}
+.screenbar-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.screenbar-heading h2 { margin: 0; color: #293b34; font: 600 15px/1.4 -apple-system, BlinkMacSystemFont, sans-serif; }
+.screenbar-panel button { cursor: pointer; border: 1px solid #b6bfae; border-radius: 7px; background: transparent; color: inherit; padding: 7px 12px; min-height: 36px; font: inherit; }
+.screenbar-heading button { border: 0; font-size: 20px; padding: 0; width: 36px; }
+.screenbar-switches { display: flex; gap: 6px; margin-bottom: 14px; }
+.screenbar-switches button { flex: 1; }
+.screenbar-panel button[aria-pressed=true] { background: #354c41; color: #fffaf0; border-color: #354c41; }
+.screenbar-panel label { display: block; margin-top: 12px; }
+.screenbar-panel input { display: block; width: 100%; margin: 5px 0 0; accent-color: #526f5e; cursor: pointer; min-height: 22px; }
+.screenbar-panel :disabled { opacity: .45; cursor: default; }
+.screenbar-panel :focus-visible { outline: 2px solid #916c3e; outline-offset: 3px; }
+.screenbar-scale { display: flex; justify-content: space-between; color: #798071; font-size: 10px; }
+@media (max-width: 600px) { .screenbar-panel { right: 16px; bottom: 140px; } }

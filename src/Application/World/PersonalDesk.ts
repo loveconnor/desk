@@ -1,3 +1,5 @@
+import ScreenBar from "./ScreenBar";
+import { DESK_WALL_OFFSET_Z } from "./deskLayout";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { keyLegendAtlas } from "../../keyboard/KeyLegends";
@@ -20,6 +22,8 @@ export default class PersonalDesk {
   sunlight = new THREE.DirectionalLight(0xfff7e8, 1.2);
   desktop = new THREE.Group();
   lift: StandingDesk;
+  screenBar: ScreenBar;
+  private resumeMaterial: THREE.MeshStandardMaterial;
   columns: THREE.Mesh[] = [];
   chairModel = new THREE.Group();
   casters: THREE.Group[] = [];
@@ -49,6 +53,13 @@ export default class PersonalDesk {
     this.group.add(this.desktop);
     this.lift = new StandingDesk(this);
     this.chair();
+    const assembly = new THREE.Group();
+    assembly.name = "Desk setup — against back wall";
+    for (const object of [...this.group.children]) {
+      if (!roomObjects.has(object)) assembly.add(object);
+    }
+    assembly.position.z = DESK_WALL_OFFSET_Z;
+    this.group.add(assembly);
     this.app.renderer.instance.shadowMap.autoUpdate = false;
     this.app.renderer.instance.shadowMap.needsUpdate = true;
   }
@@ -174,8 +185,8 @@ export default class PersonalDesk {
       near: 100,
       far: 15000,
     });
-    sun.shadow.normalBias = 5;
-    sun.shadow.bias = -0.0002;
+    sun.shadow.normalBias = 1;
+    sun.shadow.bias = -0.00005;
     sun.shadow.radius = 4;
     this.app.scene.add(sun);
     this.app.scene.add(sun.target);
@@ -232,12 +243,7 @@ export default class PersonalDesk {
     this.box(1200, 650, 95, 0, 960, z - 100, this.black, 40);
     this.box(95, 350, 100, 0, 510, -380, this.edge, 12);
     this.box(550, 35, 320, 0, 370, -340, this.black, 25);
-    this.box(1370, 42, 55, 0, 1495, -230, this.black, 20);
-    this.box(150, 90, 170, 0, 1500, -345, this.edge, 18);
-    this.box(1270, 8, 35, 0, 1470, -211, this.material(0xffdeb0), 3);
-    const glow = new THREE.PointLight(0xffce85, 0.5, 2200, 2);
-    glow.position.set(0, 1250, 30);
-    this.group.add(glow);
+    this.screenBar = new ScreenBar(this);
     const stickerTexture = new THREE.TextureLoader().load(
       "/branding/connor-love-sticker.svg",
     );
@@ -316,24 +322,18 @@ export default class PersonalDesk {
     texture.anisotropy =
       this.app.renderer.instance.capabilities.getMaxAnisotropy();
     const physics = new PaperPhysics();
-    const paper = this.mesh(
-      physics.geometry,
-      new THREE.MeshBasicMaterial({
-        map: texture,
-        toneMapped: false,
-        side: THREE.DoubleSide,
-      }),
-      1330,
-      3,
-      440,
-    );
-    // Preserve the fine printed strokes when the page is minified on the desk.
-    (paper.material as THREE.MeshBasicMaterial).onBeforeCompile = (shader) => {
-      shader.fragmentShader = shader.fragmentShader.replace(
-        "#include <map_fragment>",
-        "#include <map_fragment>\ndiffuseColor.rgb = pow(diffuseColor.rgb, vec3(2.4));",
-      );
-    };
+    // Lit paper responds to the ScreenBar and room lights. A small, textured
+    // fill preserves printed contrast at night without making a glowing page.
+    this.resumeMaterial = new THREE.MeshStandardMaterial({
+      map: texture,
+      roughness: 1,
+      metalness: 0,
+      emissive: 0xf5e5cc,
+      emissiveMap: texture,
+      emissiveIntensity: 0.18,
+      side: THREE.DoubleSide,
+    });
+    const paper = this.mesh(physics.geometry, this.resumeMaterial, 1330, 3, 440);
     paper.name = "Clickable résumé";
     paper.rotation.set(-Math.PI / 2, 0, -0.12);
     // Keep the same physical sheet through pickup, reading, and return.
@@ -493,7 +493,10 @@ export default class PersonalDesk {
       scene.position.set(-center.x, -bounds.min.y, -center.z);
       scene.traverse((object) => {
         if (!(object instanceof THREE.Mesh)) return;
-        object.castShadow = object.receiveShadow = true;
+        object.castShadow = true;
+        // The AR mesh already carries fine occlusion in its material. Receiving
+        // coarse room shadows on these tiny overlapping shells creates acne.
+        object.receiveShadow = false;
         const materials = Array.isArray(object.material)
           ? object.material
           : [object.material];
@@ -704,6 +707,15 @@ export default class PersonalDesk {
   }
 
   update() {
+    this.screenBar.update();
+    const ambient = THREE.MathUtils.clamp(
+      this.daylight.intensity + (this.app.world?.room?.lampOn ? 0.14 : 0), 0, 1,
+    );
+    this.resumeMaterial.emissiveIntensity = 0.03 + (1 - ambient) * 0.17;
+    // Carry the room's warmth into the enlarged reader without sacrificing
+    // document contrast in the darkest environment.
+    document.documentElement.style.setProperty("--paper-reader-brightness", String(0.82 + ambient * 0.18));
+    document.documentElement.style.setProperty("--paper-reader-sepia", String((1 - ambient) * 0.08));
     this.lift.update();
     const now = performance.now();
     const dt = Math.min((now - this.lastKeyFrame) / 1000, 0.05);

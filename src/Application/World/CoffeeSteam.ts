@@ -1,3 +1,4 @@
+import { DESK_WALL_OFFSET_Z } from "./deskLayout";
 import * as THREE from "three";
 import Application from "../Application";
 import Resources from "../Utils/Resources";
@@ -48,7 +49,7 @@ export default class CoffeeSteam {
       this.model.material,
     );
 
-    this.model.mesh.position.copy(new THREE.Vector3(-1430, 505, 390));
+    this.model.mesh.position.copy(new THREE.Vector3(-1430, 505, 390 + DESK_WALL_OFFSET_Z));
 
     this.scene.add(this.model.mesh);
   }

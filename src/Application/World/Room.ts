@@ -1,4 +1,6 @@
+import { DESK_WALL_OFFSET_Z } from "./deskLayout";
 import RoomWindow from "./RoomWindow";
+import Apartment from "./Apartment";
 import { bookArtwork, ArtFace } from "./bookArtwork";
 import * as THREE from "three";
 import RoomInteractions from "./RoomInteractions";
@@ -25,6 +27,7 @@ export default class Room {
     this.furnishings();
     this.officeDetails();
     this.storageCorner();
+    new Apartment(desk, this);
     this.roomWindow = new RoomWindow(desk, this);
     desk.app.renderer.instance.shadowMap.needsUpdate = true;
   }
@@ -216,7 +219,7 @@ export default class Room {
       rug,
       -150,
       -2305,
-      1470,
+      1470 + DESK_WALL_OFFSET_Z,
       this.group,
     );
     mat.rotation.x = -Math.PI / 2;
@@ -483,8 +486,8 @@ export default class Room {
     bulb.position.set(3500, 340, 2100);
     bulb.castShadow = true;
     bulb.shadow.mapSize.set(1024, 1024);
-    bulb.shadow.bias = -0.0005;
-    bulb.shadow.normalBias = 8;
+    bulb.shadow.bias = -0.0001;
+    bulb.shadow.normalBias = 2;
     bulb.shadow.camera.near = 40;
     bulb.shadow.camera.far = 15000;
     shade.castShadow = false;

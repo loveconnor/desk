@@ -1,3 +1,4 @@
+import ScreenBarControls from "./components/ScreenBarControls";
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import RoomControls from "./components/RoomControls";
@@ -26,6 +27,7 @@ const App = () => {
           <HelpPrompt />
           <Documents />
           <RoomInspector />
+          <ScreenBarControls />
         </>
       )}
       <RoomControls hidden={loading} />

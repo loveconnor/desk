@@ -34,6 +34,8 @@
   transform-origin: center;
 }
 .held-paper img {
+  filter: brightness(var(--paper-reader-brightness, 1)) sepia(var(--paper-reader-sepia, 0));
+  transition: filter 250ms ease;
   display: block;
   width: 100%;
   height: auto;

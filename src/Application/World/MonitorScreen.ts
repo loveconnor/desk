@@ -1,3 +1,4 @@
+import { DESK_WALL_OFFSET_Z } from "./deskLayout";
 import * as THREE from "three";
 import { CSS3DObject } from "three/examples/jsm/renderers/CSS3DRenderer.js";
 import GUI from "lil-gui";
@@ -45,7 +46,7 @@ export default class MonitorScreen extends EventEmitter {
     this.resources = this.application.resources;
     this.screenSize = new THREE.Vector2(SCREEN_SIZE.w, SCREEN_SIZE.h);
     this.camera = this.application.camera;
-    this.position = new THREE.Vector3(0, 950, -260);
+    this.position = new THREE.Vector3(0, 950, -260 + DESK_WALL_OFFSET_Z);
     this.rotation = new THREE.Euler(0, 0, 0);
     this.videoTextures = {};
     this.mouseClickInProgress = false;

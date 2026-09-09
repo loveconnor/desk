@@ -1,3 +1,4 @@
+import { DESK_WALL_OFFSET_Z } from "../World/deskLayout";
 import * as THREE from "three";
 import { CameraKey } from "./Camera";
 import Time from "../Utils/Time";
@@ -44,6 +45,12 @@ const keys: { [key in CameraKey]: CameraKeyframe } = {
   },
 };
 
+// Translate desk-relative views with the entire workstation.
+for (const key of ["monitor", "desk", "orbitControlsStart"] as const) {
+  keys[key].position.z += DESK_WALL_OFFSET_Z;
+  keys[key].focalPoint.z += DESK_WALL_OFFSET_Z;
+}
+
 export class MonitorKeyframe extends CameraKeyframeInstance {
   application: Application;
   sizes: Sizes;
@@ -67,7 +74,7 @@ export class MonitorKeyframe extends CameraKeyframeInstance {
       Math.max(1012, 1800 * aspect) /
         (2 * Math.tan(THREE.MathUtils.degToRad(17.5))) -
       260 +
-      180;
+      180 + DESK_WALL_OFFSET_Z;
     this.position.copy(this.targetPos);
     this.position.y += this.application.world?.computerSetup?.lift?.height ?? 0;
   }
@@ -112,7 +119,7 @@ export class DeskKeyframe extends CameraKeyframeInstance {
       Math.min(1, (this.mouse.y / this.sizes.height) * 2 - 1),
     );
     this.targetFoc.lerp(
-      new THREE.Vector3(pointerX * 160, 650 - pointerY * 100, 0),
+      new THREE.Vector3(pointerX * 160, 650 - pointerY * 100, DESK_WALL_OFFSET_Z),
       0.05,
     );
     this.targetPos.lerp(

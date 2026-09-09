@@ -23,5 +23,8 @@ export default function RoomControls({ hidden }: { hidden: boolean }) {
       onClick={() => UIEventBus.dispatch("freeCamToggle", !exploring)}>
       {exploring ? "Room overview" : "Look around"}
     </button>
+    <button className="portfolio-control" data-desk-ui onClick={() => UIEventBus.dispatch("screenbarRequest", {})}>
+      Desk light
+    </button>
   </nav>;
 }
