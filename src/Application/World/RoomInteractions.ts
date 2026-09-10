@@ -218,6 +218,13 @@ export default class RoomInteractions {
       object.position.copy(home.position);
       object.quaternion.copy(home.quaternion);
       object.scale.copy(home.scale);
+      object.traverse((child) => {
+        const material = (child as THREE.Mesh).material;
+        for (const entry of Array.isArray(material) ? material : [material]) {
+          const map = (entry as THREE.MeshBasicMaterial | undefined)?.map;
+          map?.userData.releaseHighResolution?.().catch(console.error);
+        }
+      });
       this.held = null;
       this.home = null;
       this.returning = false;

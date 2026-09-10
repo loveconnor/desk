@@ -1,3 +1,4 @@
+import { assetLoadingManager } from "../Utils/assetLoading";
 import ScreenBar from "./ScreenBar";
 import DellMonitor from "./DellMonitor";
 import NordikDeskMat from "./NordikDeskMat";
@@ -252,7 +253,7 @@ export default class PersonalDesk {
     this.group.add(keyboard);
     this.keys = keyboard.keys;
     this.mxMasterMouse();
-    const texture = new THREE.TextureLoader().load("/resume/preview.png");
+    const texture = new THREE.TextureLoader(assetLoadingManager).load("/resume/preview.png");
     texture.encoding = THREE.sRGBEncoding;
     texture.anisotropy =
       this.app.renderer.instance.capabilities.getMaxAnisotropy();
@@ -415,7 +416,7 @@ export default class PersonalDesk {
     mouse.position.set(545, NordikDeskMat.surfaceY + 1, 460);
     mouse.rotation.y = -0.1;
     this.group.add(mouse);
-    new GLTFLoader().load("/room/mouse/mx-master-4.glb", ({ scene }) => {
+    new GLTFLoader(assetLoadingManager).load("/room/mouse/mx-master-4.glb", ({ scene }) => {
       // Logitech's AR asset is in meters. Match the room's 22.5 units/cm scale.
       scene.scale.setScalar(2250);
       scene.updateMatrixWorld(true);

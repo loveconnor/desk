@@ -61,7 +61,8 @@ export default class Renderer {
 
     document.querySelector("#webgl")?.appendChild(this.instance.domElement);
 
-    this.overlayInstance = new THREE.WebGLRenderer();
+    // The full-screen grain shader does not use depth or stencil buffers.
+    this.overlayInstance = new THREE.WebGLRenderer({ depth: false, stencil: false });
     this.overlayInstance.setSize(this.sizes.width, this.sizes.height);
     this.overlayInstance.domElement.style.position = "absolute";
     this.overlayInstance.domElement.style.top = "0px";
@@ -79,6 +80,8 @@ export default class Renderer {
     this.cssInstance.setSize(this.sizes.width, this.sizes.height);
     this.cssInstance.domElement.style.position = "absolute";
     this.cssInstance.domElement.style.top = "0px";
+    // An attached iframe must never paint at its unprojected desktop dimensions.
+    this.cssInstance.domElement.style.visibility = "hidden";
 
     document.querySelector("#css")?.appendChild(this.cssInstance.domElement);
 
@@ -113,6 +116,9 @@ export default class Renderer {
   }
 
   update() {
+    // The opaque boot screen covers the room until all artwork is ready.
+    // Avoid uploading incomplete textures and rendering behind it during decode.
+    if (!this.application.loading.assetsReady) return;
     const camera = this.camera.instance;
     const projectionKey = [camera.fov, camera.aspect, camera.near, camera.far,
       camera.zoom, camera.filmGauge, camera.filmOffset, JSON.stringify(camera.view)].join(":");
@@ -127,5 +133,7 @@ export default class Renderer {
     this.instance.render(this.scene, this.camera.instance);
     this.cssInstance.render(this.cssScene, this.camera.instance);
     this.overlayInstance.render(this.overlayScene, this.camera.instance);
+    this.cssInstance.domElement.style.visibility = "visible";
+    this.application.loading.completeFirstFrame();
   }
 }

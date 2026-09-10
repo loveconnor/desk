@@ -1,3 +1,4 @@
+import { createWovenRug } from "./TextilesLighting";
 import * as THREE from "three";
 import PersonalDesk from "./PersonalDesk";
 import Room from "./Room";
@@ -57,29 +58,9 @@ export default class Apartment {
   }
 
   private rug(g: THREE.Group, w: number, d: number, color: string) {
-    const map = this.room.texture((ctx) => {
-      ctx.fillStyle = color;
-      ctx.fillRect(0, 0, 512, 512);
-      ctx.strokeStyle = "#e8dcc4";
-      ctx.lineWidth = 3;
-      ctx.strokeRect(18, 18, 476, 476);
-      ctx.strokeRect(25, 25, 462, 462);
-      for (let i = 0; i < 512; i += 3) {
-        ctx.fillStyle = i % 2 ? "rgba(255,255,240,.10)" : "rgba(45,35,25,.07)";
-        ctx.fillRect(i, 0, 1, 512);
-        ctx.fillRect(0, i, 512, 1);
-      }
-    });
-    const mesh = this.desk.mesh(
-      new THREE.PlaneGeometry(w, d),
-      new THREE.MeshStandardMaterial({ map, roughness: 1 }),
-      0,
-      -2303,
-      0,
-      g,
-    );
-    mesh.rotation.x = -Math.PI / 2;
-    mesh.castShadow = false;
+    const rug = createWovenRug(w, d, color);
+    rug.position.y = -2305;
+    g.add(rug);
   }
 
   private kitchen() {

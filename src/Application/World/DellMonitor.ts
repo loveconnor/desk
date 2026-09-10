@@ -1,3 +1,4 @@
+import { assetLoadingManager } from "../Utils/assetLoading";
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
 import { MONITOR as M, monitorSag } from "./monitorLayout";
@@ -208,7 +209,7 @@ export default class DellMonitor extends THREE.Group {
     foot.rotateX(-Math.PI / 2);
     add("Angular stand base", foot, plastic, 0, M.shelfY + 3, M.z - 95);
     // Actual Dell vector paths, including the distinctive tilted E.
-    const texture = new THREE.TextureLoader().load(
+    const texture = new THREE.TextureLoader(assetLoadingManager).load(
       "/branding/dell-wordmark.svg",
     );
     texture.encoding = THREE.sRGBEncoding;

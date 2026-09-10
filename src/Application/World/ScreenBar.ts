@@ -1,3 +1,4 @@
+import { assetLoadingManager } from "../Utils/assetLoading";
 import { MONITOR } from "./monitorLayout";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -67,7 +68,7 @@ export default class ScreenBar {
     // Immediate local fallback keeps the controls usable if the GLB fails to load.
     this.model = createScreenBarModel();
     this.mount(this.model);
-    new GLTFLoader().load(
+    new GLTFLoader(assetLoadingManager).load(
       "/models/screenbar/original-screenbar.glb",
       ({ scene }) => {
         this.group.remove(this.model);

@@ -4,14 +4,12 @@ import Application from "../../Application";
 import eventBus from "../EventBus";
 
 export default function LoadingScreen() {
-  const resources = new Application().resources;
-  const [progress, setProgress] = useState(
-    resources.toLoad ? resources.loaded / resources.toLoad : 0,
-  );
+  const loading = new Application().loading;
+  const [progress, setProgress] = useState(loading.progress);
   const [entered, setEntered] = useState(false);
   const [finished, setFinished] = useState(false);
   const started = useRef(false);
-  const ready = progress >= 1;
+  const [ready, setReady] = useState(loading.ready);
   useLayoutEffect(() => {
     const boot = document.getElementById("boot-screen");
     if (!boot) return;
@@ -27,6 +25,9 @@ export default function LoadingScreen() {
     document.documentElement.dataset.roomLoading = "true";
     const onProgress = (event: Event) =>
       setProgress((event as CustomEvent).detail.progress);
+    const onReady = () => setReady(true);
+    setProgress(loading.progress);
+    setReady(loading.ready);
     const onEntered = () => {
       setFinished(true);
       delete document.documentElement.dataset.roomLoading;
@@ -46,11 +47,13 @@ export default function LoadingScreen() {
     document.addEventListener("returningToDoor", onReturning);
     document.addEventListener("doorClosed", onClosed);
     document.addEventListener("loadedSource", onProgress);
+    document.addEventListener("roomReady", onReady);
     document.addEventListener("loadingScreenDone", onEntered);
     return () => {
       document.removeEventListener("returningToDoor", onReturning);
       document.removeEventListener("doorClosed", onClosed);
       document.removeEventListener("loadedSource", onProgress);
+      document.removeEventListener("roomReady", onReady);
       document.removeEventListener("loadingScreenDone", onEntered);
       delete document.documentElement.dataset.roomLoading;
     };

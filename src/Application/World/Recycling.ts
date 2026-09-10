@@ -1,9 +1,10 @@
+import { assetLoadingManager } from "../Utils/assetLoading";
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
 /** One complete label image, mapped once around the circumference. */
 function canLabel() {
-  const texture = new THREE.TextureLoader().load(
+  const texture = new THREE.TextureLoader(assetLoadingManager).load(
     "/room/monster/complete-wrap.jpg",
   );
   texture.encoding = THREE.sRGBEncoding;

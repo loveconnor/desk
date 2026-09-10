@@ -1,3 +1,4 @@
+import { assetLoadingManager } from "../Utils/assetLoading";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
@@ -7,7 +8,7 @@ export default class LogitechSpeakers extends THREE.Group {
   constructor(renderer: THREE.WebGLRenderer) {
     super();
     this.name = "Logitech Z207 stereo speakers";
-    this.ready = new GLTFLoader()
+    this.ready = new GLTFLoader(assetLoadingManager)
       // Refresh cached intermediate exports that clamped the logo's white edges.
       .loadAsync("/models/logitech-z207/speakers.glb?v=d9b393c3")
       .then(({ scene }) => {

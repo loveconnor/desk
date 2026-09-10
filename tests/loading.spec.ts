@@ -46,3 +46,76 @@ test('the loading composition hands off to the working entrance', async ({ page 
   await expect(page.locator('.desktop-shortcut')).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+for (const asset of ['**/room/books/*', '**/models/logitech-z207/*.glb*']) {
+  test(`entry waits for room assets: ${asset}`, async ({ page }) => {
+    test.setTimeout(90000);
+    await page.setViewportSize({ width: 900, height: 650 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    let release!: () => void;
+    let requested!: () => void;
+    const held = new Promise<void>(resolve => { release = resolve; });
+    const assetRequested = new Promise<void>(resolve => { requested = resolve; });
+    await page.route(asset, async route => {
+      requested();
+      await held;
+      await route.continue();
+    });
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await assetRequested;
+    const start = page.getByRole('button', { name: 'START', exact: true });
+    try {
+      await expect(start).toBeDisabled();
+      await page.keyboard.press('Enter');
+      await expect(page.locator('#boot-screen')).toBeVisible();
+      await expect(page.locator('.door-entry')).not.toHaveClass(/is-ready|is-opening/);
+      await expect(page.locator('.entry-progress')).not.toHaveAttribute('aria-valuenow', '100');
+    } finally {
+      release();
+    }
+    await expect(start).toBeEnabled({ timeout: 60000 });
+    await expect(page.locator('#boot-screen')).toBeHidden();
+    await start.click();
+    await expect(page.locator('.door-entry')).toHaveClass(/is-finished/, { timeout: 15000 });
+  });
+}
+
+test('preloader waits for the first rendered and positioned room frame', async ({ page }) => {
+  test.setTimeout(90000);
+  await page.setViewportSize({ width: 900, height: 650 });
+  await page.addInitScript(() => {
+    let draws = 0;
+    for (const Context of [WebGLRenderingContext, WebGL2RenderingContext]) {
+      const original = Context.prototype.drawElements;
+      Context.prototype.drawElements = function (...args) {
+        draws++;
+        return original.apply(this, args);
+      };
+    }
+    document.addEventListener('roomReady', () => {
+      const iframe = document.getElementById('computer-screen');
+      (window as any).firstRoomFrame = {
+        draws,
+        transform: iframe?.parentElement?.style.transform ?? '',
+      };
+    });
+    (window as any).desktopFlashes = [];
+    const check = () => {
+      const iframe = document.getElementById('computer-screen');
+      const boot = document.getElementById('boot-screen');
+      if (iframe && boot?.hidden && getComputedStyle(iframe).visibility === 'visible'
+          && !iframe.parentElement?.style.transform.includes('matrix3d')) {
+        (window as any).desktopFlashes.push(performance.now());
+      }
+      requestAnimationFrame(check);
+    };
+    requestAnimationFrame(check);
+  });
+  await page.goto('/');
+  await expect(page.getByRole('button', { name: 'START', exact: true })).toBeEnabled({ timeout: 60000 });
+  const frame = await page.evaluate(() => (window as any).firstRoomFrame);
+  expect(frame.draws).toBeGreaterThan(0);
+  expect(frame.transform).toContain('matrix3d');
+  expect(await page.evaluate(() => (window as any).desktopFlashes)).toEqual([]);
+  await expect(page.locator('#boot-screen')).toBeHidden();
+});

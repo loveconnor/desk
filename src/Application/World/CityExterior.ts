@@ -1,3 +1,4 @@
+import { assetLoadingManager } from "../Utils/assetLoading";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import PersonalDesk from "./PersonalDesk";
@@ -76,7 +77,7 @@ export default class CityExterior {
       "building-skyscraper-e",
     ];
     Promise.all(
-      names.map((name) => new GLTFLoader().loadAsync(`/room/city/${name}.glb`)),
+      names.map((name) => new GLTFLoader(assetLoadingManager).loadAsync(`/room/city/${name}.glb`)),
     ).then((models) => {
       for (let row = 0; row < 7; row++)
         for (let col = 0; col < 9; col++) {

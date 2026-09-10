@@ -743,9 +743,9 @@ function Desktop() {
           {[
             "network-wireless-signal-good-symbolic",
             "audio-volume-medium-symbolic",
-            "battery-good-symbolic",
+            "battery-full-symbolic",
           ].map((i) => (
-            <img key={i} src={"/themes/Yaru/status/" + i + ".svg"} alt="" />
+            <img key={i} src={"/themes/mac/status/" + i + ".svg"} alt="" />
           ))}
           <Arrow direction="down" />
         </button>

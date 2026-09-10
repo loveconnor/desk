@@ -1,3 +1,7 @@
+import { createWovenRug, createFloorLamp } from "./TextilesLighting";
+import { createShelfCabinet } from "./ShelfCabinet";
+import { createPinboard } from "./Pinboard";
+import { createPoangChair, createReadingTable } from "./ReadingFurniture";
 import { createRecycling } from "./Recycling";
 import { DESK_WALL_OFFSET_Z } from "./deskLayout";
 import RoomWindow from "./RoomWindow";
@@ -174,103 +178,13 @@ export default class Room {
     const oak = this.desk.material(0xb68a60);
     const cream = this.desk.material(0xe8dcc4);
     const charcoal = this.desk.material(0x343b38);
-    const rugMap = this.texture((ctx) => {
-      ctx.fillStyle = "#a2aaa0";
-      ctx.fillRect(0, 0, 512, 512);
-      ctx.strokeStyle = "#ded6bd";
-      ctx.lineWidth = 3;
-      ctx.strokeRect(18, 18, 476, 476);
-      ctx.strokeRect(26, 26, 460, 460);
-      for (let i = 0; i < 512; i += 3) {
-        ctx.fillStyle = i % 2 ? "rgba(255,255,240,.07)" : "rgba(25,45,35,.05)";
-        ctx.fillRect(i, 0, 1, 512);
-        ctx.fillRect(0, i, 512, 1);
-      }
-    });
-    const rug = this.desk.material(0xffffff);
-    rug.map = rugMap;
-    const mat = this.desk.mesh(
-      new THREE.PlaneGeometry(4750, 4400),
-      rug,
-      -150,
-      -2305,
-      1470 + DESK_WALL_OFFSET_Z,
-      this.group,
-    );
-    mat.rotation.x = -Math.PI / 2;
-    mat.castShadow = false;
+    const rug = createWovenRug(4750, 4400, "#9da395");
+    rug.position.set(-150, -2305, 1470 + DESK_WALL_OFFSET_Z);
+    this.group.add(rug);
 
-    // Low storage to the right of the desk, with books and a record sleeve.
-    this.box(1450, 1150, 720, 3010, -1720, -1410, oak, 18);
-    this.box(1340, 960, 25, 3010, -1710, -1038, charcoal);
-    this.box(1450, 65, 760, 3010, -1110, -1390, oak);
-    this.box(1390, 45, 700, 3010, -1690, -1400, oak);
-    this.box(45, 1100, 700, 3010, -1720, -1400, oak);
-    const bookColors = [0xd6c7a6, 0x6c837c, 0xb26748, 0xc6a053, 0x394e56];
-    for (let i = 0; i < 7; i++) {
-      const x = 2400 + i * 75;
-      const height = 350 + (i % 3) * 55;
-      this.box(
-        61,
-        height,
-        360,
-        x,
-        -1660 + height / 2,
-        -1210,
-        this.desk.material(bookColors[i % 5]),
-        3,
-      );
-      this.box(42, 7, 2, x, -1540, -1028, cream, 1);
-    }
-    this.box(450, 300, 440, 3340, -2100, -1290, cream, 12);
-    this.box(110, 35, 5, 3340, -2010, -1067, oak);
-    for (let i = 0; i < 3; i++)
-      this.box(
-        500 - i * 30,
-        55,
-        340,
-        2640,
-        -1050 + i * 55,
-        -1380,
-        this.desk.material(bookColors[i]),
-        3,
-      );
-
-    // Small floating shelf with a vinyl sleeve, echoing the desktop's playlist.
-    this.box(1550, 65, 400, 2880, 840, -1800, oak);
-    this.box(560, 590, 40, 3190, 1165, -1910, charcoal);
-    const record = this.desk.mesh(
-      new THREE.CircleGeometry(220, 48),
-      this.desk.material(0xb36c50),
-      3190,
-      1175,
-      -1870,
-      this.group,
-    );
-    this.desk.mesh(
-      new THREE.CircleGeometry(60, 24),
-      cream,
-      3190,
-      1175,
-      -1860,
-      this.group,
-    );
-    record.castShadow = false;
-    for (let i = 0; i < 4; i++)
-      this.box(
-        65,
-        310 + i * 25,
-        220,
-        2330 + i * 78,
-        1028 + i * 12.5,
-        -1830,
-        this.desk.material(bookColors[i]),
-        3,
-      );
-
+    const { cabinet, shelf } = createShelfCabinet();
+    this.group.add(cabinet, shelf);
     this.plant(-3020, -2305, -730);
-    // Compact ceramic vase on the sideboard.
-    this.desk.cylinder(110, 290, 3420, -920, -1380, cream, 75, this.group);
   }
 
   officeDetails() {
@@ -449,172 +363,32 @@ export default class Room {
       }
     }
 
-    // A low reading chair faces into the office, clear of the desk chair.
-    const seat = new THREE.Group();
-    seat.name = "Reading corner";
-    seat.position.set(3100, 0, 3300);
+    const seat = createPoangChair();
+    seat.position.set(3100, -2300, 3300);
     seat.rotation.y = -1.3;
     this.group.add(seat);
-    const upholstery = this.desk.material(0xba7954);
-    const cushion = this.desk.material(0xc88d65);
-    const part = (
-      w: number,
-      h: number,
-      d: number,
-      px: number,
-      py: number,
-      pz: number,
-      mat = upholstery,
-      r = 70,
-    ) => this.desk.box(w, h, d, px, py, pz, mat, r, seat);
-    for (const px of [-510, 510])
-      for (const pz of [-420, 420]) part(90, 390, 90, px, -2110, pz, oak, 12);
-    part(1280, 240, 1130, 0, -1850, 0);
-    part(1110, 210, 950, 0, -1630, 70, cushion);
-    part(1330, 1050, 230, 0, -1300, -490);
-    for (const px of [-655, 655]) part(230, 580, 1190, px, -1520, 0);
-    const pillow = part(560, 550, 180, 180, -1260, -290, cream, 85);
-    pillow.rotation.z = -0.16;
-    // A folded throw over one arm.
-    part(260, 40, 650, -665, -1210, 140, palette[0], 15);
-    part(35, 580, 650, -795, -1490, 140, palette[0], 15);
 
-    // Lamp behind the outer shoulder; table beside the opposite arm.
-    // Keep this grouping off the desk rug and its chair's circulation space.
-    this.desk.cylinder(260, 60, 3580, -2270, 2070, dark, 260, this.group);
-    this.desk.cylinder(28, 2850, 3580, -820, 2070, dark, 28, this.group);
-    const shadeMaterial = cream.clone();
-    shadeMaterial.emissive.setHex(0xffc177);
-    shadeMaterial.emissiveIntensity = 0.28;
-    const shade = this.desk.cylinder(
-      430,
-      520,
-      3580,
-      660,
-      2070,
-      shadeMaterial,
-      270,
-      this.group,
-    );
-    const bulb = new THREE.PointLight(0xffcc88, 1.65, 10000, 2);
-    bulb.position.set(3500, 340, 2100);
-    bulb.castShadow = true;
-    bulb.shadow.mapSize.set(1024, 1024);
-    bulb.shadow.bias = -0.0001;
-    bulb.shadow.normalBias = 2;
-    bulb.shadow.camera.near = 40;
-    bulb.shadow.camera.far = 15000;
-    shade.castShadow = false;
-    this.group.add(bulb);
-    this.lampLight = bulb;
-    this.interactions.add(shade, "Toggle reading lamp", () => {
+    const lamp = createFloorLamp();
+    lamp.group.position.set(3580, -2305, 2070);
+    this.group.add(lamp.group);
+    this.lampLight = lamp.light;
+    this.interactions.add(lamp.shade, "Toggle reading lamp", () => {
       this.lampOn = !this.lampOn;
-      bulb.intensity = this.lampOn ? 1.65 : 0;
+      lamp.setOn(this.lampOn);
       this.desk.app.renderer.instance.shadowMap.needsUpdate = true;
-      shadeMaterial.emissiveIntensity = this.lampOn ? 0.28 : 0;
     });
 
-    const tableX = 3000;
-    const tableZ = 4720;
-    this.desk.cylinder(400, 85, tableX, -1380, tableZ, oak, 400, this.group);
-    this.desk.cylinder(55, 890, tableX, -1865, tableZ, dark, 55, this.group);
-    this.desk.cylinder(270, 45, tableX, -2280, tableZ, dark, 270, this.group);
-    this.box(380, 55, 270, tableX - 70, -1310, tableZ - 60, palette[0], 3);
-    this.box(350, 25, 255, tableX - 70, -1270, tableZ - 60, paper, 2);
-    this.desk.cylinder(
-      65,
-      130,
-      tableX + 180,
-      -1270,
-      tableZ + 150,
-      cream,
-      72,
-      this.group,
-    );
+    const readingTable = createReadingTable();
+    readingTable.position.set(3000, -2300, 4720);
+    this.group.add(readingTable);
 
-    // A working pinboard gives the otherwise blank sage wall a purpose.
-    const board = new THREE.Group();
+    const { board, notes } = createPinboard(roomNotes);
     board.position.set(4000, 1450, 550);
     board.rotation.y = -Math.PI / 2;
     this.group.add(board);
-    this.desk.box(2350, 1500, 75, 0, 0, 0, oak, 12, board);
-    this.desk.box(
-      2250,
-      1400,
-      20,
-      0,
-      0,
-      55,
-      this.desk.material(0xbca17b),
-      3,
-      board,
-    );
-    for (let i = 0; i < 6; i++) {
-      const px = -710 + (i % 3) * 710;
-      const py = i < 3 ? 330 : -330;
-      const note = this.desk.box(
-        490,
-        490,
-        8,
-        px,
-        py,
-        78,
-        i % 2 ? paper : cream,
-        1,
-        board,
-      );
-      note.rotation.z = ((i % 3) - 1) * 0.06;
-      this.desk.mesh(
-        new THREE.SphereGeometry(20, 8, 8),
-        palette[i % 5],
-        px,
-        py + 210,
-        100,
-        board,
-      );
-      const content = roomNotes[i];
-      const noteTexture = this.texture((ctx) => {
-        ctx.fillStyle = "#9d6248";
-        ctx.font = "22px sans-serif";
-        ctx.fillText(content.subtitle, 35, 70);
-        ctx.fillStyle = "#263a35";
-        ctx.font = "32px Georgia";
-        ctx.fillText(content.title, 35, 140, 442);
-        ctx.font = "23px sans-serif";
-        let line = "",
-          ly = 210;
-        for (const word of content.body.split(/\s+/)) {
-          if (ctx.measureText(line + word).width > 442) {
-            ctx.fillText(line.trim(), 35, ly);
-            line = "";
-            ly += 34;
-          }
-          line += word + " ";
-        }
-        ctx.fillText(line.trim(), 35, ly);
-      }, 2048);
-      const surface = this.desk.mesh(
-        new THREE.PlaneGeometry(470, 470),
-        new THREE.MeshBasicMaterial({
-          map: noteTexture,
-          transparent: true,
-          depthWrite: false,
-        }),
-        px,
-        py,
-        82.5,
-        board,
-      );
-      surface.rotation.z = note.rotation.z;
-      surface.castShadow = false;
-      const item = new THREE.Group();
-      item.position.set(px, py, 78);
-      board.add(item);
-      board.updateWorldMatrix(true, true);
-      item.attach(note);
-      item.attach(surface);
-      this.interactions.pickup(item, content, 490, 490);
-    }
+    notes.forEach((note, index) => {
+      this.interactions.pickup(note, roomNotes[index], 505, 510);
+    });
 
     // A clock above the bookcase and a basket by the desk complete the room.
     const clockPartsStart = this.group.children.length;

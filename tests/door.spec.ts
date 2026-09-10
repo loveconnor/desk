@@ -1,11 +1,12 @@
 import { test, expect } from '@playwright/test';
 
 test('Escape reverses the entrance and the closed door can be opened again', async ({ page }) => {
+  test.setTimeout(180000);
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto('/');
   const start = page.getByRole('button', { name: 'START', exact: true });
-  await expect(start).toBeEnabled();
+  await expect(start).toBeEnabled({ timeout: 60000 });
   await start.click();
   await expect(page.locator('.door-entry')).toHaveClass(/is-finished/, { timeout: 12000 });
   await page.keyboard.press('Escape');

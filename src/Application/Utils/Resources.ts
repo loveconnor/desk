@@ -1,9 +1,7 @@
+import { assetLoadingManager } from "./assetLoading";
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import Application from "../Application";
-import UIEventBus from "../UI/EventBus";
 import EventEmitter from "./EventEmitter";
-import Loading from "./Loading";
 
 export default class Resources extends EventEmitter {
   sources: Resource[];
@@ -22,8 +20,6 @@ export default class Resources extends EventEmitter {
     cubeTextureLoader: THREE.CubeTextureLoader;
     audioLoader: THREE.AudioLoader;
   };
-  application: Application;
-  loading: Loading;
 
   constructor(sources: Resource[]) {
     super();
@@ -33,19 +29,20 @@ export default class Resources extends EventEmitter {
     this.items = { texture: {}, cubeTexture: {}, gltfModel: {}, audio: {} };
     this.toLoad = this.sources.length;
     this.loaded = 0;
-    this.application = new Application();
-    this.loading = this.application.loading;
 
     this.setLoaders();
+    // Audio decoding can outlive its network request. Keep initialization open
+    // until every resource callback has run and the world has been constructed.
+    assetLoadingManager.itemStart("room-initialization");
     this.startLoading();
   }
 
   setLoaders() {
     this.loaders = {
-      gltfLoader: new GLTFLoader(),
-      textureLoader: new THREE.TextureLoader(),
-      cubeTextureLoader: new THREE.CubeTextureLoader(),
-      audioLoader: new THREE.AudioLoader(),
+      gltfLoader: new GLTFLoader(assetLoadingManager),
+      textureLoader: new THREE.TextureLoader(assetLoadingManager),
+      cubeTextureLoader: new THREE.CubeTextureLoader(assetLoadingManager),
+      audioLoader: new THREE.AudioLoader(assetLoadingManager),
     };
   }
 
@@ -78,14 +75,9 @@ export default class Resources extends EventEmitter {
 
     this.loaded++;
 
-    this.loading.trigger("loadedSource", [
-      source.name,
-      this.loaded,
-      this.toLoad,
-    ]);
-
     if (this.loaded === this.toLoad) {
       this.trigger("ready");
+      assetLoadingManager.itemEnd("room-initialization");
     }
   }
 }

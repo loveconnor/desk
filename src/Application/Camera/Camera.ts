@@ -244,7 +244,7 @@ export default class Camera extends EventEmitter {
 
   setPostLoadTransition() {
     UIEventBus.on("openDoor", () => {
-      if (this.doorwayBusy || this.roomEntered) return;
+      if (!this.application.loading.ready || this.doorwayBusy || this.roomEntered) return;
       this.doorwayBusy = true;
       const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
       this.application.world.entrance.open();

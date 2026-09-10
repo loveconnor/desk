@@ -1,3 +1,4 @@
+import { assetLoadingManager } from "../Utils/assetLoading";
 import * as THREE from "three";
 import Application from "../Application";
 import BakedModel from "../Utils/BakedModel";
@@ -47,7 +48,7 @@ export default class Computer {
       new THREE.Float32BufferAttribute([0, 1, 1, 1, 0, 0, 1, 0], 2),
     );
     geometry.setIndex([0, 2, 1, 2, 3, 1]);
-    const texture = new THREE.TextureLoader().load(
+    const texture = new THREE.TextureLoader(assetLoadingManager).load(
       "/branding/connor-love-sticker.svg",
     );
     texture.encoding = THREE.sRGBEncoding;
