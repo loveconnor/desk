@@ -1,3 +1,5 @@
+import { applyShadowBudget } from "./Utils/shadowBudget";
+import { compactGraphics } from "./Utils/deviceProfile";
 import * as THREE from "three";
 import { CSS3DRenderer } from "three/examples/jsm/renderers/CSS3DRenderer.js";
 import Application from "./Application";
@@ -23,6 +25,7 @@ export default class Renderer {
   cssInstance: CSS3DRenderer;
   raiseExposure: boolean;
   private projectionKey = "";
+  private shadowsConfigured = false;
   uniforms: {
     [uniform: string]: THREE.IUniform<any>;
   };
@@ -41,7 +44,7 @@ export default class Renderer {
 
   setInstance() {
     this.instance = new THREE.WebGLRenderer({
-      antialias: true,
+      antialias: !compactGraphics,
       alpha: true,
       powerPreference: "default",
     });
@@ -119,6 +122,11 @@ export default class Renderer {
     // The opaque boot screen covers the room until all artwork is ready.
     // Avoid uploading incomplete textures and rendering behind it during decode.
     if (!this.application.loading.assetsReady) return;
+    if (!this.shadowsConfigured) {
+      applyShadowBudget(this.scene, this.instance.capabilities.maxTextures, compactGraphics);
+      this.shadowsConfigured = true;
+      this.instance.shadowMap.needsUpdate = true;
+    }
     const camera = this.camera.instance;
     const projectionKey = [camera.fov, camera.aspect, camera.near, camera.far,
       camera.zoom, camera.filmGauge, camera.filmOffset, JSON.stringify(camera.view)].join(":");

@@ -41,3 +41,11 @@ npx playwright install chromium
 npm test
 npm run test:browser
 ```
+
+## Mobile image budget
+
+Touch devices use smaller book photos, 384px book textures (1024px when opened), and a 1× render scale. The desktop wallpaper uses a 1024px image on touch devices and 2560px elsewhere, including inside the room’s desktop iframe.
+
+After replacing source book photos or the wallpaper, run `python3 scripts/build-mobile-images.py` (requires Pillow) and commit the generated images. Check mobile startup with `npx playwright test tests/mobile-memory.spec.ts`; use `--config playwright.webkit.config.ts` for WebKit (`npx playwright install webkit` first). Browser emulation does not reproduce an iPhone’s process memory limit.
+
+The renderer budgets shadow maps against the GPU texture-unit limit before its first frame (up to eight on desktop, four on touch devices), retaining sunlight and entrance contact shadows first. Run `npx playwright test tests/rendering.spec.ts` to check shader link status and Three.js warnings as well as entry. City GLBs omit redundant UV-set-zero overrides for the pinned Three.js loader; rerun `python3 scripts/normalize-city-uvs.py` after replacing those models.

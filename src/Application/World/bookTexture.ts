@@ -1,3 +1,4 @@
+import { compactGraphics } from "../Utils/deviceProfile";
 import { assetLoadingManager } from "../Utils/assetLoading";
 import * as THREE from "three";
 import type { ArtFace } from "./bookArtwork";
@@ -26,7 +27,8 @@ export function loadBookTexture(face: ArtFace, width: number, height: number) {
   texture.encoding = THREE.sRGBEncoding;
   texture.anisotropy = 8;
   textures.set(key, texture);
-  const url = "/room/books/" + face.file;
+  const baseResolution = compactGraphics ? 384 : 768;
+  const url = "/room/books/" + (compactGraphics ? "mobile/" : "") + face.file;
   const render = async (targetHeight: number) => {
     const photo = await new THREE.ImageLoader(assetLoadingManager).loadAsync(
       url,
@@ -120,7 +122,7 @@ export function loadBookTexture(face: ArtFace, width: number, height: number) {
   // Download completion alone is not enough: the cropped canvas must be painted.
   const artworkTask = `book-artwork:${key}`;
   assetLoadingManager.itemStart(artworkTask);
-  const ready = queueArtwork(() => render(768)).then(
+  const ready = queueArtwork(() => render(baseResolution)).then(
     () => assetLoadingManager.itemEnd(artworkTask),
     (error) => {
       assetLoadingManager.itemError(artworkTask);
@@ -128,7 +130,7 @@ export function loadBookTexture(face: ArtFace, width: number, height: number) {
       console.error(`Could not load book artwork: ${face.file}`, error);
     },
   );
-  let resolution = 768;
+  let resolution = baseResolution;
   let update = ready;
   const setResolution = (height: number) => {
     if (resolution === height) return update;
@@ -141,7 +143,7 @@ export function loadBookTexture(face: ArtFace, width: number, height: number) {
       throw error;
     });
   };
-  texture.userData.ensureHighResolution = () => setResolution(2048);
-  texture.userData.releaseHighResolution = () => setResolution(768);
+  texture.userData.ensureHighResolution = () => setResolution(compactGraphics ? 1024 : 2048);
+  texture.userData.releaseHighResolution = () => setResolution(baseResolution);
   return texture;
 }

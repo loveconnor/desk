@@ -9,7 +9,7 @@ textarea {
   color: #25252a;
 }
 .macos {
-  background-image: url("/macos/wallpaper.jpg");
+  background-image: url("/macos/wallpaper-desktop.jpg");
   background-size: cover;
   background-position: center;
 }
@@ -508,4 +508,9 @@ hr {
   .dock > button:hover {
     transform: none;
   }
+}
+
+/* Match physical input, including the large desktop iframe on a phone. */
+@media (pointer: coarse) {
+  .macos { background-image: url("/macos/wallpaper-mobile.jpg"); }
 }

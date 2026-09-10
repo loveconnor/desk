@@ -275,7 +275,13 @@ export default class Hallway {
         Array.isArray(child.material)
       )
         continue;
-      const key = `${child.material.uuid}:${child.castShadow}:${child.receiveShadow}`;
+      // Rounded boxes are non-indexed; cylinders and other primitives are
+      // indexed. Only batch geometries with matching attribute layouts.
+      const layout = Object.entries<THREE.BufferAttribute | THREE.InterleavedBufferAttribute>(child.geometry.attributes)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([name, attribute]) => [name, attribute.itemSize, attribute.normalized, attribute.array.constructor.name]);
+      const key = JSON.stringify([child.material.uuid, child.castShadow,
+        child.receiveShadow, Boolean(child.geometry.index), layout]);
       const batch = batches.get(key) || [];
       batch.push(child);
       batches.set(key, batch);

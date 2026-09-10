@@ -1,3 +1,4 @@
+import "../analytics";
 import { bindKeyboard, keyboardState } from "../keyboard/KeyboardState";
 import Arrow from "../icons/Arrow";
 import React, { useEffect, useRef, useState } from "react";

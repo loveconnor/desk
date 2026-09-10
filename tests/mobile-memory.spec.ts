@@ -8,12 +8,16 @@ test('mobile loads the full room without retired assets or concurrent book decod
   let peak = 0;
   let books = 0;
   const legacy: string[] = [];
+  const oversized: string[] = [];
+  const wallpapers: string[] = [];
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   page.on('request', request => {
+    if (/\/room\/books\/[^/]+$/.test(request.url())) oversized.push(request.url());
+    if (/\/macos\/wallpaper[^/]*\.jpg/.test(request.url())) wallpapers.push(request.url());
     if (/\/models\/(Computer|World|Decor)\//.test(request.url())) legacy.push(request.url());
   });
-  await page.route('**/room/books/*', async route => {
+  await page.route('**/room/books/mobile/*', async route => {
     peak = Math.max(peak, ++active);
     books++;
     try {
@@ -28,6 +32,11 @@ test('mobile loads the full room without retired assets or concurrent book decod
   const start = page.getByRole('button', { name: 'START', exact: true });
   await expect(start).toBeEnabled({ timeout: 150000 });
   expect(legacy).toEqual([]);
+  expect(oversized).toEqual([]);
+  expect(wallpapers.length).toBeGreaterThan(0);
+  expect(wallpapers.every(url => url.endsWith('/wallpaper-mobile.jpg'))).toBe(true);
+  const canvas = page.locator('#webgl canvas');
+  expect(await canvas.evaluate((element: HTMLCanvasElement) => element.width)).toBe(390);
   expect(books).toBeGreaterThan(48);
   expect(peak).toBe(1);
   await start.tap();

@@ -1,4 +1,5 @@
 import "./style.css";
+import "./analytics";
 import Application from "./Application/Application";
 
 try {
