@@ -348,3 +348,35 @@ html[data-room-loading] .desktop-shortcut {
     text-align: center;
   }
 }
+
+.artwork-context {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(620px, 90vw);
+  box-sizing: border-box;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: #f2ecdf;
+  color: #263a35;
+  white-space: normal;
+  font: 13px/1.5 "Love Sans", sans-serif;
+  box-shadow: 0 4px 24px #0002;
+}
+.artwork-context summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  list-style: none;
+}
+.artwork-context summary::-webkit-details-marker { display: none; }
+.artwork-context summary::marker { content: ""; }
+.artwork-context summary:focus-visible { outline: 2px solid currentColor; outline-offset: 5px; border-radius: 3px; }
+.artwork-context-chevron { flex: 0 0 18px; transition: transform 160ms ease; }
+.artwork-context[open] .artwork-context-chevron { transform: rotate(90deg); }
+@media (prefers-reduced-motion: reduce) {
+  .artwork-context-chevron { transition: none; }
+}
+.artwork-context p { margin: 10px 0 0; color: inherit; font: inherit; }

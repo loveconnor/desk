@@ -2,19 +2,45 @@ import * as THREE from "three";
 import TWEEN from "@tweenjs/tween.js";
 import Hallway from "./Hallway";
 import PersonalDesk from "./PersonalDesk";
+import {
+  hallwayMaterials,
+  lever,
+  hingeDetail,
+  paneledDoor,
+  corridorLighting,
+  screw,
+} from "./hallwayDetails";
 
 export default class Entrance {
   hinge = new THREE.Group();
   constructor(private desk: PersonalDesk) {
-    const frame = desk.material(0xd4bd95);
-    const wall = desk.material(0xe8e1d4);
-    const wood = desk.material(0x8a6145);
-    const brass = desk.material(0xc4a16b, 0.6);
+    const materials = hallwayMaterials(desk);
+    const { frame, plaster: wall, wood, brass } = materials;
     const z = 16135;
-    // Solid front wall with a genuine opening, matching the room boundary.
-    desk.box(32300, 7830, 150, -23850, 1585, z, wall).receiveShadow = false;
-    desk.box(35400, 7830, 150, 12300, 1585, z, wall).receiveShadow = false;
-    desk.box(2300, 3500, 150, -6550, 3750, z, wall).receiveShadow = false;
+    // One uninterrupted plaster surface, with the opening cut into its outline.
+    // Separate rounded boxes left bright vertical seams above the lintel.
+    const outline = new THREE.Shape();
+    outline.moveTo(-40000, -2330);
+    for (const [x, y] of [
+      [-7700, -2330],
+      [-7700, 2000],
+      [-5400, 2000],
+      [-5400, -2330],
+      [30000, -2330],
+      [30000, 5500],
+      [-40000, 5500],
+    ])
+      outline.lineTo(x, y);
+    outline.closePath();
+    const wallGeometry = new THREE.ExtrudeGeometry(outline, {
+      depth: 150,
+      bevelEnabled: false,
+    });
+    const uv = wallGeometry.attributes.uv;
+    for (let i = 0; i < uv.count; i++)
+      uv.setXY(i, uv.getX(i) / 4000, uv.getY(i) / 4000);
+    const entranceWall = desk.mesh(wallGeometry, wall, 0, 0, z - 75);
+    entranceWall.name = "Continuous entry plaster around door opening";
     for (const x of [-7750, -5350])
       desk.box(160, 4370, 250, x, -145, z, frame, 12);
     desk.box(2560, 160, 250, -6550, 2080, z, frame, 12);
@@ -23,21 +49,20 @@ export default class Entrance {
     desk.box(70000, 90, 9400, -5000, -2365, 20450, desk.material(0xbfa484), 1);
     this.hinge.position.set(-7700, -2310, z);
     desk.app.scene.add(this.hinge);
-    desk.box(2300, 4290, 115, 1150, 2145, 0, wood, 16, this.hinge);
-    const inset = desk.material(0x9c7352);
-    for (const y of [1030, 3090]) {
-      desk.box(1960, 1840, 28, 1150, y, 70, frame, 8, this.hinge);
-      desk.box(1840, 1720, 34, 1150, y, 89, inset, 8, this.hinge);
-    }
-    desk.box(120, 340, 35, 2010, 2100, 83, brass, 18, this.hinge);
-    desk.box(310, 60, 80, 1900, 2140, 140, brass, 25, this.hinge);
+    paneledDoor(desk, this.hinge, 1150, 0, 0, 2300, 4290, wood);
+    lever(desk, this.hinge, 2125, 2100, 66, brass);
     for (const y of [650, 2145, 3660])
-      desk.box(70, 170, 150, 25, y, 0, brass, 10, this.hinge);
+      hingeDetail(desk, this.hinge, 12, y, 66, brass);
+    for (const x of [-7750, -5350]) {
+      desk.box(35, 4310, 35, x, -145, z + 141, frame, 6);
+      desk.box(175, 210, 285, x, -2195, z, frame, 8);
+    }
+    desk.box(2500, 35, 35, -6550, 2080, z + 141, frame, 6);
     const canvas = document.createElement("canvas");
     canvas.width = 1024;
     canvas.height = 256;
     const ctx = canvas.getContext("2d")!;
-    ctx.fillStyle = "#d4bd95";
+    ctx.fillStyle = "#bca16e";
     ctx.fillRect(0, 0, 1024, 256);
     ctx.fillStyle = "#283930";
     ctx.textAlign = "center";
@@ -46,21 +71,35 @@ export default class Entrance {
     ctx.fillText("Connor Love", 512, 134);
     const texture = new THREE.CanvasTexture(canvas);
     texture.encoding = THREE.sRGBEncoding;
-    texture.anisotropy = desk.app.renderer.instance.capabilities.getMaxAnisotropy();
-    desk.box(1180, 320, 38, 1150, 3220, 126, brass, 12, this.hinge);
+    texture.anisotropy =
+      desk.app.renderer.instance.capabilities.getMaxAnisotropy();
+    desk.box(1180, 320, 38, 1150, 3220, 25, brass, 12, this.hinge);
     const plaque = desk.mesh(
       new THREE.PlaneGeometry(1120, 280),
-      new THREE.MeshBasicMaterial({ map: texture }),
+      new THREE.MeshStandardMaterial({
+        map: texture,
+        metalness: 0.65,
+        roughness: 0.35,
+        envMap: brass.envMap,
+        envMapIntensity: 0.6,
+      }),
       1150,
       3220,
-      151,
+      50,
       this.hinge,
     );
     plaque.castShadow = false;
-    const light = new THREE.PointLight(0xffe6bb, 0.8, 11000, 2);
-    light.position.set(-6200, 3000, 19500);
-    desk.app.scene.add(light);
-    new Hallway(desk);
+    for (const x of [610, 1690])
+      screw(desk, this.hinge, x, 3220, 53, brass, 13);
+    this.hinge.traverse((object) => {
+      const mesh = object as THREE.Mesh;
+      if (mesh.material)
+        (Array.isArray(mesh.material)
+          ? mesh.material
+          : [mesh.material]
+        ).forEach(corridorLighting);
+    });
+    new Hallway(desk, materials);
     desk.app.renderer.instance.shadowMap.needsUpdate = true;
   }
   open() {

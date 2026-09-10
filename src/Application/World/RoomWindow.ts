@@ -49,7 +49,7 @@ export default class RoomWindow {
   private outside = new THREE.Group();
   private rail: THREE.Mesh;
   private hitPlane: THREE.Mesh;
-  private light = new THREE.PointLight(0xffdda0, 0.65, 13000, 1);
+  private light = new THREE.PointLight(0xffdda0, 0.65, 8500, 2);
   city: CityExterior;
   private patchMaterial = new THREE.MeshBasicMaterial({
     color: 0xffe2a6,
@@ -327,7 +327,9 @@ export default class RoomWindow {
     // The sun only needs a new sample each second. Blinds and lamp controls
     // still update on every animation frame while their state changes.
     const date = this.dateOverride ?? new Date();
-    const sample = this.dateOverride ? date.getTime() : Math.floor(date.getTime() / 1000);
+    const sample = this.dateOverride
+      ? date.getTime()
+      : Math.floor(date.getTime() / 1000);
     const lightingKey = `${sample}:${this.coverage}:${this.room.lampOn}:${this.basics.size}:${this.city.ready}`;
     if (
       Math.abs(before - this.coverage) > 0.0001 ||
@@ -351,17 +353,22 @@ export default class RoomWindow {
     this.daylight = THREE.MathUtils.smoothstep(altitude, -7, 35);
     const transmission = Math.pow(1 - this.coverage, 1.7);
     const light = this.daylight * transmission;
-    this.desk.daylight.intensity = 0.003 + light * 1.05;
+    // Retain low reflected room light as the window closes. Direct sunlight
+    // still falls to zero; the soft floor keeps dark furniture distinguishable.
+    const reflected = this.room.lampOn ? 0.055 : 0.012;
+    const slatLeak = this.daylight * (1 - transmission) * 0.02;
+    this.desk.daylight.intensity =
+      0.012 + light * 0.156 + (1 - light) * reflected + slatLeak;
     this.desk.sunlight.intensity =
-      Math.max(0, Math.sin(sun.altitude)) * 1.6 * transmission;
+      Math.max(0, Math.sin(sun.altitude)) * 0.85 * transmission;
     this.desk.sunlight.color.setHex(altitude < 15 ? 0xffc28a : 0xfff7e8);
     this.desk.sunlight.position.set(
       -3500 + Math.sin(sun.angle) * 2500,
       3500 + Math.max(0, Math.sin(sun.altitude)) * 4500,
       3500,
     );
-    this.light.intensity = light * 0.75;
-    this.bounce.intensity = this.room.lampOn ? 0.075 : 0;
+    this.light.intensity = light * 0.9;
+    this.bounce.intensity = this.room.lampOn ? 0.03 : 0;
     this.night.value = 1 - this.daylight;
     this.exteriorMaterials.forEach((material, i) =>
       material.color

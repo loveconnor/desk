@@ -7,6 +7,8 @@ import { DESK_WALL_OFFSET_Z } from "./deskLayout";
 import RoomWindow from "./RoomWindow";
 import { clockHandAngles } from "./clockTime";
 import Apartment from "./Apartment";
+import PrinterStation from "./PrinterStation";
+import ApartmentLighting from "./ApartmentLighting";
 import { bookArtwork } from "./bookArtwork";
 import { loadBookTexture } from "./bookTexture";
 import { jacketGeometry } from "./bookBinding";
@@ -37,6 +39,7 @@ export default class Room {
     this.officeDetails();
     this.storageCorner();
     new Apartment(desk, this);
+    new ApartmentLighting(desk, this);
     this.roomWindow = new RoomWindow(desk, this);
     desk.app.renderer.instance.shadowMap.needsUpdate = true;
   }
@@ -551,65 +554,7 @@ export default class Room {
   }
 
   storageCorner() {
-    const oak = this.desk.material(0xa77a50);
-    const dark = this.desk.material(0x343c39);
-    const cream = this.desk.material(0xe6d7ba);
-    const white = this.desk.material(0xf0e9d8);
-    const x = -8600;
-    // Storage and printing station to the left of the bookcase.
-    for (const dx of [-1190, 1190])
-      for (const z of [-1780, -1060])
-        this.box(100, 300, 100, x + dx, -2160, z, dark, 10);
-    this.box(2800, 1260, 940, x, -1420, -1440, oak, 15);
-    this.box(2870, 75, 1010, x, -755, -1440, oak, 10);
-    for (const dx of [-905, 0, 905]) {
-      this.box(865, 1120, 35, x + dx, -1420, -947, cream, 7);
-      this.box(230, 35, 30, x + dx, -1040, -910, dark, 5);
-    }
-    // Printer sits directly on the cabinet, with a paper tray and output slot.
-    this.box(950, 360, 680, x + 520, -537, -1430, dark, 35);
-    this.box(910, 70, 640, x + 520, -322, -1440, white, 14);
-    this.box(660, 40, 400, x + 520, -697, -990, dark, 5);
-    this.box(500, 12, 275, x + 520, -670, -950, white, 2);
-    this.box(640, 65, 12, x + 520, -565, -1082, this.desk.black, 3);
-    for (let i = 0; i < 3; i++)
-      this.box(
-        650 - i * 35,
-        65,
-        460,
-        x - 720,
-        -684 + i * 65,
-        -1400,
-        i % 2 ? cream : this.desk.material(0x526f6c),
-        4,
-      );
-    // Two large framed prints make this a deliberate part of the room.
-    for (let i = 0; i < 2; i++) {
-      const cx = x - 750 + i * 1500;
-      this.box(1240, 1580, 70, cx, 750, -1950, oak, 5);
-      this.box(1140, 1480, 12, cx, 750, -1906, white, 2);
-      const art = this.texture((ctx) => {
-        ctx.fillStyle = "#eee3cd";
-        ctx.fillRect(0, 0, 512, 512);
-        ctx.fillStyle = i ? "#aa674b" : "#526f6c";
-        ctx.beginPath();
-        ctx.arc(256, 200, 135, 0, Math.PI * 2);
-        ctx.fill();
-        for (let j = 0; j < 5; j++) {
-          ctx.fillStyle = j % 2 ? "#eee3cd" : "#a8af96";
-          ctx.fillRect(70, 300 + j * 25, 372, 13);
-        }
-      });
-      const print = this.desk.mesh(
-        new THREE.PlaneGeometry(990, 1310),
-        new THREE.MeshStandardMaterial({ map: art, roughness: 1 }),
-        cx,
-        750,
-        -1890,
-        this.group,
-      );
-      print.castShadow = false;
-    }
+    new PrinterStation(this.desk, this);
     this.plant(-11050, -2305, -1380, "snake");
   }
 

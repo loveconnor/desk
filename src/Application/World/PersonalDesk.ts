@@ -21,8 +21,8 @@ import { openDocument } from "../../documents/Documents";
 export default class PersonalDesk {
   app = new Application();
   group = new THREE.Group();
-  daylight = new THREE.HemisphereLight(0xfff8ed, 0x737579, 1.05);
-  sunlight = new THREE.DirectionalLight(0xfff7e8, 1.2);
+  daylight = new THREE.HemisphereLight(0xfff8ed, 0x737579, 0.16);
+  sunlight = new THREE.DirectionalLight(0xfff7e8, 0.65);
   desktop = new THREE.Group();
   lift: StandingDesk;
   screenBar: ScreenBar;
@@ -194,9 +194,6 @@ export default class PersonalDesk {
     sun.shadow.radius = 4;
     this.app.scene.add(sun);
     this.app.scene.add(sun.target);
-    const fill = new THREE.DirectionalLight(0xcbdcf7, 0.45);
-    fill.position.set(3000, 2000, -2500);
-    this.app.scene.add(fill);
     const floor = this.mesh(
       new THREE.PlaneGeometry(17100, 18225),
       this.material(0xc8c5bf),

@@ -7,6 +7,7 @@ export interface RoomDetail {
   title: string;
   subtitle: string;
   body: string;
+  showDescription?: boolean;
   image?: string;
   href?: string;
 }

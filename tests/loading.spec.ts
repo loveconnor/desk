@@ -119,3 +119,75 @@ test('preloader waits for the first rendered and positioned room frame', async (
   expect(await page.evaluate(() => (window as any).desktopFlashes)).toEqual([]);
   await expect(page.locator('#boot-screen')).toBeHidden();
 });
+
+for (const failure of ['decode rejection', 'decode hang', 'audio request', 'book image', 'speaker model']) {
+  test(`entry recovers from ${failure}`, async ({ page }) => {
+    test.setTimeout(90000);
+    const errors: string[] = [];
+    page.on('pageerror', error => errors.push(error.message));
+    await page.setViewportSize({ width: 900, height: 650 });
+    if (failure.startsWith('decode')) {
+      await page.addInitScript((hang) => {
+        BaseAudioContext.prototype.decodeAudioData = function () {
+          return hang ? new Promise(() => {}) : Promise.reject(new DOMException('Unsupported audio', 'EncodingError'));
+        };
+      }, failure === 'decode hang');
+    } else {
+      const pattern = failure === 'audio request' ? '**/audio/door/open.mp3'
+        : failure === 'book image' ? '**/room/books/*' : '**/models/logitech-z207/*.glb*';
+      await page.route(pattern, route => route.abort());
+    }
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('button', { name: 'START', exact: true })).toBeEnabled({ timeout: 60000 });
+    await expect(page.locator('#boot-screen')).toBeHidden();
+    expect(errors).toEqual([]);
+  });
+}
+
+test('a required texture failure offers the working desktop instead of a stuck percentage', async ({ page }) => {
+  await page.route('**/smudges.jpg', route => route.abort());
+  await page.goto('/');
+  await expect(page.locator('#boot-status')).toHaveText('Room unavailable — open the desktop below');
+  await expect(page.locator('.entry-progress')).toBeHidden();
+  await page.locator('.entry-skip').click();
+  await expect(page).toHaveURL(/desktop.html/);
+});
+
+test('a request that never finishes stops displaying fake progress', async ({ page }) => {
+  await page.addInitScript(() => {
+    const timeout = window.setTimeout.bind(window);
+    window.setTimeout = ((handler: TimerHandler, delay?: number, ...args: any[]) =>
+      timeout(handler, delay === 45000 ? 1000 : delay, ...args)) as typeof window.setTimeout;
+  });
+  let release!: () => void;
+  const held = new Promise<void>(resolve => { release = resolve; });
+  await page.route('**/smudges.jpg', async route => {
+    await held;
+    await route.abort();
+  });
+  try {
+    await page.goto('/', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('#boot-status')).toHaveText('Room unavailable — open the desktop below', { timeout: 10000 });
+    await expect(page.locator('.entry-progress')).toBeHidden();
+    await expect(page.locator('.entry-skip')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'START', exact: true })).toBeDisabled();
+  } finally {
+    release();
+  }
+});
+
+test('a first-frame rendering exception leaves a usable desktop fallback', async ({ page }) => {
+  test.setTimeout(90000);
+  await page.addInitScript(() => {
+    for (const Context of [WebGLRenderingContext, WebGL2RenderingContext]) {
+      Context.prototype.drawElements = function () {
+        throw new Error('Simulated GPU rendering failure');
+      };
+    }
+  });
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
+  await expect(page.locator('#boot-status')).toHaveText('Room unavailable — open the desktop below', { timeout: 60000 });
+  await expect(page.locator('#boot-screen')).toBeVisible();
+  await expect(page.locator('.entry-skip')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'START', exact: true })).toBeDisabled();
+});

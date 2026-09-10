@@ -207,7 +207,22 @@ export default class Apartment {
     const strip = this.desk.material(0xffe1ac);
     strip.emissive.setHex(0xffcd8a);
     strip.emissiveIntensity = 0.65;
-    this.box(g, 4300, 15, 45, 1000, 978, -120, strip, 2);
+    const diffuser = this.box(g, 4300, 15, 45, 1000, 978, -120, strip, 2);
+    diffuser.castShadow = false;
+    const taskLights = [-500, 1000, 2500].map((x) => {
+      const light = new THREE.SpotLight(0xffdfb5, 0.9, 2600, 1.05, 0.8, 1.5);
+      light.name = "Kitchen shelf task light";
+      light.position.set(x, 950, -100);
+      light.target.position.set(x, -500, 160);
+      g.add(light, light.target);
+      return light;
+    });
+    let stripOn = true;
+    this.room.interactions.add(diffuser, "Toggle kitchen task lighting", () => {
+      stripOn = !stripOn;
+      strip.emissiveIntensity = stripOn ? 0.65 : 0;
+      taskLights.forEach((light) => (light.intensity = stripOn ? 0.9 : 0));
+    });
   }
 
   private dining() {
@@ -310,7 +325,30 @@ export default class Apartment {
     this.cylinder(g, 65, 1030, -2300, -1750, -2580, this.dark);
     this.cylinder(g, 270, 45, -2300, -2280, -2580, this.dark);
     this.cylinder(g, 145, 360, -2300, -985, -2580, this.clay, 100);
-    this.cylinder(g, 310, 390, -2300, -620, -2580, this.cream, 190);
+    const shadeMaterial = this.cream.clone();
+    shadeMaterial.emissive.setHex(0xffd9ac);
+    shadeMaterial.emissiveIntensity = 0.18;
+    const shade = this.cylinder(
+      g,
+      310,
+      390,
+      -2300,
+      -620,
+      -2580,
+      shadeMaterial,
+      190,
+    );
+    shade.castShadow = false;
+    const tableLight = new THREE.PointLight(0xffd7a4, 0.85, 4200, 2);
+    tableLight.name = "Living room table lamp illumination";
+    tableLight.position.set(-2300, -620, -2580);
+    g.add(tableLight);
+    let lampOn = true;
+    this.room.interactions.add(shade, "Toggle living room table lamp", () => {
+      lampOn = !lampOn;
+      tableLight.intensity = lampOn ? 0.85 : 0;
+      shadeMaterial.emissiveIntensity = lampOn ? 0.18 : 0;
+    });
     this.room.plant(3210, -2305, 13750);
   }
 }

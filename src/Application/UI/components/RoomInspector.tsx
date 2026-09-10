@@ -19,6 +19,17 @@ export default function RoomInspector() {
       data-desk-ui
       aria-label={`Inspecting ${detail.title}`}
     >
+      {detail.showDescription && (
+        <details className="artwork-context">
+          <summary>
+            <svg className="artwork-context-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="m9 5 7 7-7 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            {detail.title} · {detail.subtitle} — Design context
+          </summary>
+          <p>{detail.body}</p>
+        </details>
+      )}
       <span>Drag to turn · Esc to put back</span>
       <button
         className="portfolio-control"

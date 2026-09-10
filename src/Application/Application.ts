@@ -91,9 +91,16 @@ export default class Application {
 
   update() {
     if (this.stats) this.stats.begin();
-    this.camera.update();
-    this.world.update();
-    this.renderer.update();
+    if (this.loading.failed) return;
+    try {
+      this.camera.update();
+      this.world.update();
+      this.renderer.update();
+    } catch (error) {
+      if (this.loading.ready) throw error;
+      console.error("Could not render the room", error);
+      this.loading.fail();
+    }
     if (this.stats) this.stats.end();
   }
 

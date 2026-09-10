@@ -224,7 +224,7 @@ export function createFloorLamp() {
     new THREE.Vector3(-45, 7, -570),
   ]);
   add(group, new THREE.TubeGeometry(cord, 24, 5, 6, false), metal);
-  const light = new THREE.PointLight(0xffcc88, 1.65, 10000, 2);
+  const light = new THREE.PointLight(0xffcc88, 0.8, 6500, 2);
   light.position.set(0, 2870, 0);
   light.castShadow = true;
   light.shadow.mapSize.set(1024, 1024);
@@ -233,8 +233,15 @@ export function createFloorLamp() {
   light.shadow.camera.near = 40;
   light.shadow.camera.far = 15000;
   group.add(light);
+  // Fabric transmits diffuse light even where the opaque shadow proxy blocks
+  // the bulb. Split the existing output rather than increasing its total power.
+  const shadeSpill = new THREE.PointLight(0xffd9af, 0.55, 6500, 2);
+  shadeSpill.name = "Reading lamp diffuse shade spill";
+  shadeSpill.position.copy(light.position);
+  group.add(shadeSpill);
   const setOn = (on: boolean) => {
-    light.intensity = on ? 1.65 : 0;
+    light.intensity = on ? 0.8 : 0;
+    shadeSpill.intensity = on ? 0.55 : 0;
     shadeMaterial.emissiveIntensity = on ? 0.22 : 0;
     lining.emissiveIntensity = on ? 0.36 : 0;
     glass.emissiveIntensity = on ? 1.1 : 0;
