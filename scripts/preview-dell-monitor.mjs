@@ -1,15 +1,16 @@
 import { chromium } from '@playwright/test';
-const browser=await chromium.launch({headless:true});
+const browser=await chromium.launch({headless:true,args:process.platform === "darwin" ? ["--use-angle=metal"] : []});
 try {
  const page=await browser.newPage({viewport:{width:1400,height:1000}});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/monitor-preview',route=>route.fulfill({contentType:'text/html',body:'<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js"}}</script><body style="margin:0"></body>'}));
- await page.goto('http://localhost:5173/monitor-preview');
+ await page.goto(`${process.env.PREVIEW_URL || 'http://localhost:5173'}/monitor-preview`);
+ await page.route('https://www.connorlove.com/**', route=>route.fulfill({contentType:'text/html',body:`<style>body{font:24px Arial;background:white;color:#111}h1{font-size:48px}.row{border-top:1px solid #111;padding:14px 0}span{display:inline-block;width:24%}</style><h1>Clear text across the whole screen</h1>${Array.from({length:12},(_,i)=>`<div class="row"><span>Left column ${i}</span><span>Center left ${i}</span><span>Center right ${i}</span><span>Right column ${i}</span></div>`).join('')}`}));
  const metrics=await page.evaluate(async()=>{
   const T=await import('/node_modules/three/build/three.module.js');
   const {CSS3DRenderer,CSS3DObject}=await import('/node_modules/three/examples/jsm/renderers/CSS3DRenderer.js');
   const {default:Dell}=await import('/src/Application/World/DellMonitor.ts');
-  const {MONITOR:M,monitorSag}=await import('/src/Application/World/monitorLayout.ts');
+  const {MONITOR:M}=await import('/src/Application/World/monitorLayout.ts');
   const s=new T.Scene();
   const r=new T.WebGLRenderer({alpha:true,antialias:true,preserveDrawingBuffer:true});r.setSize(1400,1000);r.outputEncoding=T.sRGBEncoding;r.toneMapping=T.ACESFilmicToneMapping;r.toneMappingExposure=.85;
   r.domElement.style.cssText='position:absolute;top:0;pointer-events:none;z-index:2';document.body.appendChild(r.domElement);document.body.style.background='#bdbcb8';
@@ -19,12 +20,9 @@ try {
   container.style.width=M.screenWidth*2+'px';container.style.height=M.screenHeight*2+'px';iframe.style.zoom='2';
   const object=new CSS3DObject(container);object.scale.setScalar(.5);object.position.set(0,M.screenY,M.z);cs.add(object);css.domElement.firstElementChild.appendChild(container);
   await new Promise(resolve=>iframe.onload=resolve);
-  const {default:CurvedDesktop}=await import('/src/Application/World/CurvedDesktop.ts');
-  const display=new CurvedDesktop(iframe,object.position,M.screenWidth,M.screenHeight);
-  const holeG=new T.PlaneGeometry(M.screenWidth,M.screenHeight,32,1);const hp=holeG.attributes.position;for(let i=0;i<hp.count;i++)hp.setZ(i,monitorSag(hp.getX(i)));
+  const holeG=new T.PlaneGeometry(M.screenWidth,M.screenHeight);
   const hole=new T.Mesh(holeG,new T.MeshBasicMaterial({color:0,opacity:0,transparent:true,blending:T.NoBlending,toneMapped:false,side:T.DoubleSide}));hole.position.copy(object.position);hole.renderOrder=-100;s.add(hole);
   const glassGeometry=new T.PlaneGeometry(M.screenWidth,M.screenHeight,32,1);
-  const gp=glassGeometry.attributes.position;for(let i=0;i<gp.count;i++)gp.setZ(i,monitorSag(gp.getX(i)));
   const glass=new T.Mesh(glassGeometry,new T.MeshBasicMaterial({color:0x111111,transparent:true,opacity:.03,depthWrite:false}));glass.position.set(0,M.screenY,M.z+2);s.add(glass);
   const monitor=new Dell();s.add(monitor);
   const {GLTFLoader}=await import('/node_modules/three/examples/jsm/loaders/GLTFLoader.js');
@@ -33,13 +31,13 @@ try {
   s.add(new T.HemisphereLight(0xfff8ed,0x737579,1.05));const light=new T.DirectionalLight(0xfff7e8,1.2);light.position.set(-1500,4000,3500);s.add(light);
   const shelf=new T.Mesh(new T.BoxGeometry(2700,60,670),new T.MeshStandardMaterial({color:0x242528,roughness:.8}));shelf.position.set(0,322.5,-345);s.add(shelf);
   const c=new T.PerspectiveCamera(37,1.4,10,10000);c.position.set(1100,1650,2900);c.lookAt(0,840,-260);
-  window.preview={s,r,c,css,cs,monitor,point:(u,v)=>{const p=new T.Vector3(u-M.screenWidth/2,M.screenY+M.screenHeight/2-v,M.z+monitorSag(u-M.screenWidth/2)).project(c);return {x:(p.x+1)*700,y:(1-p.y)*500};}};
-  function render(){display.update(c);r.render(s,c);css.render(cs,c);requestAnimationFrame(render)}render();
+  window.preview={s,r,c,css,cs,monitor,point:(u,v)=>{const p=new T.Vector3(u-M.screenWidth/2,M.screenY+M.screenHeight/2-v,M.z).project(c);return {x:(p.x+1)*700,y:(1-p.y)*500};}};
+  function render(){r.render(s,c);css.render(cs,c);requestAnimationFrame(render)}render();
   const bounds=new T.Box3().setFromObject(monitor);
   if(Math.abs(bounds.min.y-M.shelfY)>.01)throw new Error('Stand is not resting on shelf');
   if(Math.abs(bounds.max.x-bounds.min.x-M.width)>.01)throw new Error('Incorrect monitor width');
-  if(monitorSag(M.screenWidth/2)<70)throw new Error('Missing curvature');
-  return {widthMm:M.width/M.scale,heightMm:M.height/M.scale,screenMm:[M.screenWidth/M.scale,M.screenHeight/M.scale],radiusMm:M.radius/M.scale,edgeAdvanceMm:monitorSag(M.screenWidth/2)/M.scale};
+  if(container.style.filter || iframe.style.filter)throw new Error('Desktop must remain unfiltered');
+  return {widthMm:M.width/M.scale,heightMm:M.height/M.scale,screenMm:[M.screenWidth/M.scale,M.screenHeight/M.scale],flatDisplay:true};
  });
  await page.waitForTimeout(1800);
  await page.screenshot({path:'output/dell-monitor-angle.png'});
@@ -63,5 +61,11 @@ try {
  point=await pointFor(frame.getByRole('button',{name:'Terminal',exact:true}));await page.mouse.click(point.x,point.y);
  point=await pointFor(frame.getByLabel('Terminal command'));await page.mouse.click(point.x,point.y);await page.keyboard.type('whoami');await page.keyboard.press('Enter');
  if(!(await frame.getByRole('dialog',{name:'Terminal'}).innerText()).includes('Connor Love'))throw new Error('Typing failed');
- console.log(JSON.stringify({metrics,desktopClickPassed:true,typingPassed:true,errors}));if(errors.length)process.exitCode=1;
+ point=await pointFor(frame.getByRole('button',{name:'Web Browser',exact:true}));await page.mouse.click(point.x,point.y);
+ await frame.getByRole('dialog',{name:'Web Browser'}).waitFor();
+ await page.waitForTimeout(300);await page.screenshot({path:'output/dell-monitor-native-text.png'});
+ // The display and front aperture must be coplanar, including at both edges.
+ const aligned=await page.evaluate(()=>{const {monitor}=window.preview;const b=monitor.getObjectByName('Continuous slim rounded bezel').geometry.attributes.position;for(let i=0;i<b.count;i++){if(![2,-25].includes(b.getZ(i)))return false}return !document.querySelector('feDisplacementMap')});
+ if(!aligned)throw new Error('Display aperture is warped');
+ console.log(JSON.stringify({metrics,aligned,desktopClickPassed:true,typingPassed:true,errors}));if(errors.length)process.exitCode=1;
 }finally{await browser.close()}

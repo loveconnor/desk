@@ -1,5 +1,3 @@
-import CurvedDesktop from "./CurvedDesktop";
-import { monitorSag } from "./monitorLayout";
 import { MONITOR } from "./monitorLayout";
 import { DESK_WALL_OFFSET_Z } from "./deskLayout";
 import * as THREE from "three";
@@ -20,7 +18,6 @@ const IFRAME_SIZE = {
 };
 
 export default class MonitorScreen extends EventEmitter {
-  curvedDesktop?: CurvedDesktop;
   movingSurfaces: THREE.Object3D[] = [];
   appliedHeight = 0;
   application: Application;
@@ -64,7 +61,7 @@ export default class MonitorScreen extends EventEmitter {
     this.initializeScreenEvents();
     this.createIframe();
     const maxOffset = this.createTextureLayers();
-    // The curved bezel closes the display perimeter.
+    // The bezel and native browser surface share one flat aperture.
     this.createPerspectiveDimmer(maxOffset);
   }
 
@@ -216,7 +213,7 @@ export default class MonitorScreen extends EventEmitter {
     iframe.style.padding = IFRAME_PADDING + "px";
     iframe.style.boxSizing = "border-box";
     iframe.style.opacity = "1";
-    iframe.className = "jitter";
+    iframe.style.display = "block";
     iframe.id = "computer-screen";
     iframe.frameBorder = "0";
     iframe.title = "Connor Love Desktop";
@@ -233,9 +230,8 @@ export default class MonitorScreen extends EventEmitter {
    * @param element the element to create the css plane for
    */
   createCssPlane(element: HTMLElement) {
-    // One continuous browser surface. The SVG projection follows the cylinder
-    // without slicing, duplicating DOM, or breaking native hover effects.
-    // Rasterize the browser at twice the scene resolution before projection.
+    // Preserve native text rendering and input on one unfiltered browser plane.
+    // Rasterize at twice the scene resolution before CSS perspective projection.
     element.style.width = this.screenSize.width * 2 + "px";
     element.style.height = this.screenSize.height * 2 + "px";
     (element.querySelector("iframe")! as HTMLIFrameElement).style.setProperty(
@@ -250,22 +246,8 @@ export default class MonitorScreen extends EventEmitter {
       element,
     );
     this.movingSurfaces.push(object);
-    const iframe = element.querySelector("iframe")!;
-    iframe.addEventListener(
-      "load",
-      () => {
-        this.curvedDesktop = new CurvedDesktop(
-          iframe,
-          this.position,
-          this.screenSize.width,
-          this.screenSize.height,
-        );
-        this.curvedDesktop.update(this.camera.instance);
-      },
-      { once: true },
-    );
     const hole = new THREE.Mesh(
-      this.curvedGeometry(),
+      this.screenGeometry(),
       new THREE.MeshBasicMaterial({
         color: 0,
         transparent: true,
@@ -281,17 +263,11 @@ export default class MonitorScreen extends EventEmitter {
     this.movingSurfaces.push(hole);
   }
 
-  curvedGeometry() {
-    const geometry = new THREE.PlaneGeometry(
+  screenGeometry() {
+    return new THREE.PlaneGeometry(
       this.screenSize.width,
       this.screenSize.height,
-      32,
-      1,
     );
-    const p = geometry.attributes.position;
-    for (let i = 0; i < p.count; i++) p.setZ(i, monitorSag(p.getX(i)));
-    geometry.computeVertexNormals();
-    return geometry;
   }
 
   /**
@@ -314,12 +290,6 @@ export default class MonitorScreen extends EventEmitter {
         blending: THREE.AdditiveBlending,
         opacity: 0.025,
         offset: 24,
-      },
-      innerShadow: {
-        texture: textures.monitorShadowTexture,
-        blending: THREE.NormalBlending,
-        opacity: 0.12,
-        offset: 5,
       },
       video: {
         texture: this.videoTextures["video-1"],
@@ -392,7 +362,7 @@ export default class MonitorScreen extends EventEmitter {
     });
 
     // Create geometry
-    const geometry = this.curvedGeometry();
+    const geometry = this.screenGeometry();
 
     // Create mesh
     const mesh = new THREE.Mesh(geometry, material);
@@ -485,7 +455,7 @@ export default class MonitorScreen extends EventEmitter {
       depthWrite: false,
     });
 
-    const plane = this.curvedGeometry();
+    const plane = this.screenGeometry();
 
     const mesh = new THREE.Mesh(plane, material);
 
@@ -523,7 +493,6 @@ export default class MonitorScreen extends EventEmitter {
     for (const surface of this.movingSurfaces) surface.position.y += delta;
     this.position.y = MONITOR.screenY + height;
     this.appliedHeight = height;
-    this.curvedDesktop?.update(this.camera.instance);
     if (this.dimmingPlane) {
       const planeNormal = new THREE.Vector3(0, 0, 1);
       const viewVector = new THREE.Vector3();

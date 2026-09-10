@@ -8,6 +8,7 @@ import "./macos.css";
 import Documents from "../documents/Documents";
 import Notes from "./Notes";
 import Music from "./Music";
+import Browser from "./Browser";
 
 type AppId =
   | "about"
@@ -435,66 +436,6 @@ function Calculator() {
           </button>
         ))}
       </div>
-    </div>
-  );
-}
-function Browser() {
-  const [address, setAddress] = useState(profile.website);
-  const [url, setUrl] = useState(profile.website);
-  const [navigation, setNavigation] = useState(0);
-  const navigate = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const input = event.currentTarget.querySelector("input")!;
-    try {
-      const destination = new URL(
-        address.includes("://") ? address : `https://${address}`,
-      );
-      if (
-        destination.protocol !== "https:" ||
-        !["connorlove.com", "www.connorlove.com"].includes(destination.hostname)
-      ) {
-        throw new Error("Enter a connorlove.com address.");
-      }
-      input.setCustomValidity("");
-      setUrl(destination.href);
-      setAddress(destination.href);
-      setNavigation((value) => value + 1);
-    } catch {
-      input.setCustomValidity("Enter a valid connorlove.com address.");
-      input.reportValidity();
-    }
-  };
-  return (
-    <div className="browser">
-      <form onSubmit={navigate}>
-        <button
-          type="button"
-          aria-label="Portfolio home"
-          onClick={() => {
-            setUrl(profile.website);
-            setAddress(profile.website);
-            setNavigation((value) => value + 1);
-          }}
-        >
-          ⌂
-        </button>
-        <input
-          aria-label="Web address"
-          value={address}
-          onChange={(event) => {
-            event.target.setCustomValidity("");
-            setAddress(event.target.value);
-          }}
-        />
-        <button type="submit">Go</button>
-      </form>
-      <iframe
-        key={navigation}
-        className="browser-page"
-        title="Connor Love’s portfolio"
-        src={url}
-        sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
-      />
     </div>
   );
 }

@@ -17,9 +17,9 @@ export function apartmentMix(
   const blinds = THREE.MathUtils.clamp(coverage, 0, 1);
   return {
     cityVolume: (0.1 + proximity * 0.12) * (0.5 + day * 0.5) * (1 - blinds * 0.12),
-    cityFrequency: 900 + proximity * 900 - blinds * 150,
+    cityFrequency: 7000 + proximity * 3000 - blinds * 400,
     cityPan: THREE.MathUtils.clamp(direction.normalize().dot(right) * 0.65, -0.65, 0.65),
-    roomVolume: 0.12,
+    roomVolume: 0.035,
   };
 }
 
@@ -47,7 +47,7 @@ export default class ApartmentAmbience {
       .setBuffer(manager.loadedAudio.apartmentRoom)
       .setLoop(true)
       .setVolume(0);
-    document.addEventListener("loadingScreenDone", this.enter);
+    document.addEventListener("doorOpening", this.enter);
     document.addEventListener("doorClosed", this.leave);
     document.addEventListener("muteToggle", this.mute);
     document.addEventListener("visibilitychange", this.syncPlayback);
@@ -100,7 +100,7 @@ export default class ApartmentAmbience {
   }
 
   destroy() {
-    document.removeEventListener("loadingScreenDone", this.enter);
+    document.removeEventListener("doorOpening", this.enter);
     document.removeEventListener("doorClosed", this.leave);
     document.removeEventListener("muteToggle", this.mute);
     document.removeEventListener("visibilitychange", this.syncPlayback);

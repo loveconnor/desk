@@ -28,9 +28,9 @@ Deploy `dist/` to a static host. On Vercel, select the Vite preset.
 - `src/Application/World/PersonalDesk.ts` — desk, chair, and mouse
 - `public/resume/` — résumé PDF, LaTeX source, and preview image
 
-The browser app loads the live portfolio inside the desktop window. Its address bar and home button navigate that embedded page.
+The browser app uses a native iframe for connorlove.com and Connor's project sites. Shortcuts open HonestUI and Tokenizer in the same desktop window. The address bar accepts HTTPS connorlove.com subdomains, honestui.com, and project names. There is no search engine or remote browser backend; the site deploys as static files again.
 
-Deploy the portfolio project's `next.config.js` header change alongside this app: replace `X-Frame-Options: SAMEORIGIN` with `Content-Security-Policy: frame-ancestors 'self' https://experience.connorlove.com https://desk.connorlove.com http://localhost:5173 http://127.0.0.1:5173 http://localhost:4173 http://127.0.0.1:4173`. Both the 3D page and the nested desktop must be permitted as frame ancestors. Other hosts need to be explicitly added before they can embed the portfolio.
+Embedded sites must permit this site's origin in their framing headers, including both the outer room and nested desktop origin. Add any new deployment or development origin to the portfolio's CSP `frame-ancestors` policy if needed. Project shortcuts live in `src/desktop/Browser.tsx`. Clove Colors currently sends `frame-ancestors 'none'` and `X-Frame-Options: DENY`, so it is not included as a shortcut until that project permits embedding.
 
 ## Check
 
@@ -39,4 +39,5 @@ npm run typecheck
 npm run build
 npx playwright install chromium
 npm test
+npm run test:browser
 ```

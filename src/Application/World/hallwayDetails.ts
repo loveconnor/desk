@@ -131,22 +131,27 @@ export function lever(
 ) {
   desk.box(115, 335, 24, x, y, z, brass, 14, parent);
   for (const dy of [-137, 137]) screw(desk, parent, x, y + dy, z + 14, brass);
-  const neck = desk.cylinder(37, 90, x, y + 48, z + 55, brass, 32, parent);
+  const grip = new THREE.Group();
+  grip.name = "Operable door lever";
+  grip.position.set(x, y + 48, z + 55);
+  parent.add(grip);
+  const neck = desk.cylinder(37, 90, 0, 0, 0, brass, 32, grip);
   neck.rotation.x = Math.PI / 2;
   desk.line(
     [
-      [x, y + 48, z + 90],
-      [x - 45, y + 48, z + 125],
-      [x - 155, y + 48, z + 130],
-      [x - 240, y + 55, z + 115],
+      [0, 0, 35],
+      [-45, 0, 70],
+      [-155, 0, 75],
+      [-240, 7, 60],
     ],
     23,
     brass,
-    parent,
+    grip,
   );
   const lock = desk.cylinder(27, 7, x, y - 75, z + 17, brass, 27, parent);
   lock.rotation.x = Math.PI / 2;
   desk.box(5, 26, 2, x, y - 75, z + 22, desk.material(0x302a22), 1, parent);
+  return grip;
 }
 export function hingeDetail(
   desk: PersonalDesk,

@@ -1,1 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="12" fill="#300a24"/><text x="32" y="44" text-anchor="middle" font-size="36" font-family="monospace" fill="#fff">CL</text></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="230 222 800 800">
+  <rect x="230" y="222" width="800" height="800" rx="112" fill="#fff"/>
+  <g fill="#222">
+    <path d="M569 357C418 381 302 491 302 630C302 771 417 887 569 887V793C471 793 393 724 393 630C393 539 471 463 569 461Z"/>
+    <path d="M601 357L697 406V793H874L961 887H601Z"/>
+  </g>
+</svg>

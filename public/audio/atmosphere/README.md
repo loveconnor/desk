@@ -1,31 +1,39 @@
 # Apartment ambience
 
-Two quiet, locally served loops: traffic heard through a closed apartment window
-and faint indoor ventilation. No added speech, music, birds, rain, or sirens.
-The city recording is a general urban ambience, not a claimed NYC field recording.
+The city layer uses a five-minute section of an actual Bushwick, Brooklyn field
+recording: distant traffic and the elevated M train, recorded from a rooftop.
+It is played quietly through the window position to approximate
+hearing the city indoors; the source itself is not an indoor recording.
+A faint ventilation loop supplies the indoor room tone.
 
-Sources (both listed as CC0 1.0 on Freesound, checked 2026-09-09):
+## Sources
 
-- `apartment-city.wav`: “Seamless City Loop” by qubodup, based on a CC0 window
-  recording by jmbphilmes. https://freesound.org/people/qubodup/sounds/223093/
-  Preview: https://cdn.freesound.org/previews/223/223093_71257-hq.mp3
-- `apartment-room.wav`: “Empty Office Room Tone” by richwise (recorded before
-  anyone arrived; ventilation only). https://freesound.org/people/richwise/sounds/456207/
-  Preview: https://cdn.freesound.org/previews/456/456207_1481531-hq.mp3
+- `nyc-apartment.m4a`: “New York City night evening rooftop ambience traffic,
+  Bushwick, Brooklyn, above-ground subway M train.wav” by SpliceSound.
+  Original duration: 22:39.529. CC0, verified September 10, 2026.
+  https://freesound.org/people/SpliceSound/sounds/369891/
+  Preview: https://cdn.freesound.org/previews/369/369891_1480854-hq.mp3
+- `apartment-room.wav`: “Empty Office Room Tone” by richwise, CC0.
+  https://freesound.org/people/richwise/sounds/456207/
 - License: https://creativecommons.org/publicdomain/zero/1.0/
 
-Edits: mono downmix for spatial placement, 16 kHz PCM, high/low-pass filtering,
-level matching, and two-second crossfaded loop seams. The indoor filter also
-removes the high-frequency equipment beep mentioned in the source description.
+City edits: skip the initial five seconds, preserve stereo and the source's
+frequency detail, apply a single peak-safe gain, and crossfade the two-second
+loop seam. No baked-in filtering or compression. Encode as 96 kbps / 44.1 kHz
+AAC. The loop lasts five minutes.
 
-To rebuild, download the previews above, decode each with macOS `afconvert
--f WAVE -d LEI16 input.mp3 output.wav`, then run:
+Rebuild with `python3 scripts/build-nyc-audio.py decoded-source.wav output.wav`,
+then `afconvert -f m4af -d aac@44100 -b 96000 output.wav nyc-apartment.m4a`.
+Runtime filtering only rolls off the upper treble (approximately 7–10 kHz),
+and the ventilation layer is kept substantially quieter than the city.
 
-```sh
-python3 scripts/build-apartment-audio.py city.wav room.wav
-```
+Room edits: mono 16 kHz PCM, 55–850 Hz filtering, level matching and a two-second
+crossfade. The filter removes the high equipment beep in the source recording.
 
-Only two native Web Audio loops run in the browser. Mixing updates at most four
-times per second, with smooth audio parameter ramps. Loops pause when muted,
-when the page is hidden, or after returning to the closed door. Re-entering does
-not stack additional loops. The original `office.mp3` is retained but not loaded.
+Two native Web Audio loops start as soon as the door is activated, before the
+camera enters the room. Mixing updates at most four times
+per second with smooth ramps. Loops pause when muted, hidden, or after returning
+to the closed door. Re-entering does not stack loops.
+
+Legacy apartment-city.wav (not loaded) is “Seamless City Loop” by qubodup,
+https://freesound.org/people/qubodup/sounds/223093/, CC0. office.mp3 is also unused.

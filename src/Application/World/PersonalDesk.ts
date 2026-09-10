@@ -182,12 +182,12 @@ export default class PersonalDesk {
     sun.castShadow = true;
     sun.shadow.mapSize.set(2048, 2048);
     Object.assign(sun.shadow.camera, {
-      left: -5000,
-      right: 5000,
-      top: 5000,
-      bottom: -5000,
+      left: -14000,
+      right: 14000,
+      top: 14000,
+      bottom: -14000,
       near: 100,
-      far: 15000,
+      far: 45000,
     });
     sun.shadow.normalBias = 1;
     sun.shadow.bias = -0.00005;

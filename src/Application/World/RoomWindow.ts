@@ -35,6 +35,16 @@ export function nycSun(date: Date) {
         Math.cos(lat) * Math.cos(dec) * Math.cos(angle),
     ),
     angle,
+    // South-facing window: +X east, +Y up, -Z toward the exterior.
+    direction: new THREE.Vector3(
+      -Math.cos(dec) * Math.sin(angle),
+      Math.sin(lat) * Math.sin(dec) +
+        Math.cos(lat) * Math.cos(dec) * Math.cos(angle),
+      -(
+        Math.sin(lat) * Math.cos(dec) * Math.cos(angle) -
+        Math.cos(lat) * Math.sin(dec)
+      ),
+    ),
   };
 }
 
@@ -51,12 +61,6 @@ export default class RoomWindow {
   private hitPlane: THREE.Mesh;
   private light = new THREE.PointLight(0xffdda0, 0.65, 8500, 2);
   city: CityExterior;
-  private patchMaterial = new THREE.MeshBasicMaterial({
-    color: 0xffe2a6,
-    transparent: true,
-    opacity: 0.15,
-    depthWrite: false,
-  });
   private cords: THREE.Mesh[] = [];
   private drag: {
     id: number;
@@ -155,22 +159,13 @@ export default class RoomWindow {
     this.light.position.set(-2800, 1800, -1300);
     room.group.add(this.light);
     room.group.add(this.bounce);
-    for (let i = 0; i < 2; i++) {
-      const patch = new THREE.Mesh(
-        new THREE.PlaneGeometry(760, 1900),
-        this.patchMaterial,
-      );
-      patch.position.set(-3000 + i * 850, -2308, 800);
-      patch.rotation.set(-Math.PI / 2, 0, -0.28);
-      room.group.add(patch);
-    }
     room.group.traverse((object) => {
       if (!(object instanceof THREE.Mesh) || object === this.hitPlane) return;
       const materials = Array.isArray(object.material)
         ? object.material
         : [object.material];
       for (const m of materials)
-        if (m instanceof THREE.MeshBasicMaterial && m !== this.patchMaterial)
+        if (m instanceof THREE.MeshBasicMaterial)
           this.basics.set(m, m.color.clone());
     });
     document.addEventListener("loadingScreenDone", () => {
@@ -353,20 +348,27 @@ export default class RoomWindow {
     this.daylight = THREE.MathUtils.smoothstep(altitude, -7, 35);
     const transmission = Math.pow(1 - this.coverage, 1.7);
     const light = this.daylight * transmission;
-    // Retain low reflected room light as the window closes. Direct sunlight
-    // still falls to zero; the soft floor keeps dark furniture distinguishable.
-    const reflected = this.room.lampOn ? 0.055 : 0.012;
-    const slatLeak = this.daylight * (1 - transmission) * 0.02;
+    // Keep closed-blind ambient fill low; fixtures provide their own local light.
+    const reflected = this.room.lampOn ? 0.018 : 0.004;
+    const slatLeak = this.daylight * (1 - transmission) * 0.004;
     this.desk.daylight.intensity =
       0.012 + light * 0.156 + (1 - light) * reflected + slatLeak;
-    this.desk.sunlight.intensity =
-      Math.max(0, Math.sin(sun.altitude)) * 0.85 * transmission;
-    this.desk.sunlight.color.setHex(altitude < 15 ? 0xffc28a : 0xfff7e8);
-    this.desk.sunlight.position.set(
-      -3500 + Math.sin(sun.angle) * 2500,
-      3500 + Math.max(0, Math.sin(sun.altitude)) * 4500,
-      3500,
-    );
+    // Cast through the real opening. The frame, sill, blinds and furniture
+    // occlude this light on every receiving surface, including the woven rug.
+    // Also attenuate the room's directional source by the exposed aperture.
+    // Shadow maps alone cannot reliably seal the thin blackout slats.
+    const sunlight = this.desk.sunlight;
+    sunlight.intensity =
+      THREE.MathUtils.smoothstep(sun.direction.y, 0, 0.12) *
+      THREE.MathUtils.smoothstep(-sun.direction.z, 0, 0.12) *
+      0.85 * transmission;
+    sunlight.color.setHex(altitude < 15 ? 0xffc28a : 0xfff7e8);
+    // Center shadow coverage on the full floor, avoiding an unshadowed border.
+    sunlight.target.position.set(-4450, -2313, 7022.5);
+    sunlight.position
+      .copy(sunlight.target.position)
+      .addScaledVector(sun.direction, 22000);
+    this.desk.app.renderer.instance.shadowMap.needsUpdate = true;
     this.light.intensity = light * 0.9;
     this.bounce.intensity = this.room.lampOn ? 0.03 : 0;
     this.night.value = 1 - this.daylight;
@@ -375,7 +377,6 @@ export default class RoomWindow {
         .copy(this.exteriorColors[i])
         .multiplyScalar(0.045 + 0.955 * this.daylight),
     );
-    this.patchMaterial.opacity = this.daylight * transmission * 0.14;
     this.city.update(this.daylight);
     const glow = roomBrightness(light, this.room.lampOn);
     this.basics.forEach((color, material) =>

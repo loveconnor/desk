@@ -9,7 +9,8 @@
     "preview": "vite preview --host 0.0.0.0",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write src vite.config.ts tsconfig.json index.html desktop.html",
-    "test": "playwright test"
+    "test": "playwright test",
+    "test:browser": "playwright test --config playwright.browser.config.ts"
   },
   "dependencies": {
     "@tweenjs/tween.js": "18.6.4",

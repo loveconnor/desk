@@ -918,3 +918,10 @@ strong {
   border: 0;
   background: #fff;
 }
+
+.browser > form input { min-width: 0; }
+.browser > form button:disabled { opacity: .35; cursor: default; }
+/* Project pages use native iframe layout inside the monitor. */
+.browser-projects { display: flex; gap: 6px; flex-wrap: wrap; padding: 5px 10px; background: #f1f1f3; border-bottom: 1px solid #ddd; flex-shrink: 0; }
+.browser-projects button { border: 0; border-radius: 4px; padding: 5px 9px; color: #444; background: transparent; font: inherit; font-size: 12px; cursor: pointer; }
+.browser-projects button:hover { background: #dedee4; }

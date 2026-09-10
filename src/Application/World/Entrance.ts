@@ -13,6 +13,7 @@ import {
 
 export default class Entrance {
   hinge = new THREE.Group();
+  private handle: THREE.Group;
   constructor(private desk: PersonalDesk) {
     const materials = hallwayMaterials(desk);
     const { frame, plaster: wall, wood, brass } = materials;
@@ -50,7 +51,7 @@ export default class Entrance {
     this.hinge.position.set(-7700, -2310, z);
     desk.app.scene.add(this.hinge);
     paneledDoor(desk, this.hinge, 1150, 0, 0, 2300, 4290, wood);
-    lever(desk, this.hinge, 2125, 2100, 66, brass);
+    this.handle = lever(desk, this.hinge, 2125, 2100, 66, brass);
     for (const y of [650, 2145, 3660])
       hingeDetail(desk, this.hinge, 12, y, 66, brass);
     for (const x of [-7750, -5350]) {
@@ -103,16 +104,51 @@ export default class Entrance {
     desk.app.renderer.instance.shadowMap.needsUpdate = true;
   }
   open() {
-    this.desk.app.world.audioManager.playAudio("doorOpen", {
-      volume: 0.45,
+    document.dispatchEvent(new Event("doorOpening"));
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const audioManager = this.desk.app.world.audioManager;
+    const sound = audioManager.playAudio("doorOpen", {
+      volume: 0.24,
       position: new THREE.Vector3(-6550, 0, 16135),
       refDistance: 7000,
-      filter: { type: "lowpass", frequency: 6500 },
+      filter: { type: "lowpass", frequency: 3800 },
     });
-    this.swing(Math.PI * 0.54);
+    // Remove microphone rumble while preserving the recorded latch and hinge.
+    const audio = audioManager.audioPool[sound];
+    const highpass = audioManager.context.createBiquadFilter();
+    highpass.type = "highpass";
+    highpass.frequency.value = 110;
+    audio.setFilters([highpass, ...audio.getFilters()]);
+    // The lever moves on the first frame; the door follows the released latch.
+    new TWEEN.Tween(this.handle.rotation)
+      .to({ z: Math.PI / 7 }, reduced ? 1 : 160)
+      .easing(TWEEN.Easing.Quadratic.Out)
+      .onUpdate(() => {
+        this.desk.app.renderer.instance.shadowMap.needsUpdate = true;
+      })
+      .onComplete(() => {
+        this.swing(Math.PI * 0.54);
+        new TWEEN.Tween(this.handle.rotation)
+          .to({ z: 0 }, reduced ? 1 : 280)
+          .delay(reduced ? 0 : 180)
+          .easing(TWEEN.Easing.Quadratic.Out)
+          .onUpdate(() => {
+            this.desk.app.renderer.instance.shadowMap.needsUpdate = true;
+          })
+          .start();
+      })
+      .start();
   }
   close(done: () => void) {
-    this.swing(0, done);
+    this.swing(0, () => {
+      this.desk.app.world.audioManager.playAudio("doorClose", {
+        volume: 0.5,
+        position: new THREE.Vector3(-6550, 0, 16135),
+        refDistance: 7000,
+        filter: { type: "lowpass", frequency: 3800 },
+      });
+      done();
+    });
   }
   private swing(angle: number, done?: () => void) {
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;

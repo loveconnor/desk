@@ -42,7 +42,7 @@ export default class WallControls {
     this.texture.anisotropy = desk.app.renderer.instance.capabilities.getMaxAnisotropy();
     const face = desk.mesh(
       new THREE.PlaneGeometry(2190, 850),
-      new THREE.MeshBasicMaterial({ map: this.texture }),
+      new THREE.MeshStandardMaterial({ map: this.texture, roughness: 1 }),
       0,
       175,
       86,
@@ -72,7 +72,7 @@ export default class WallControls {
       );
       const mesh = desk.mesh(
         new THREE.PlaneGeometry(920, 220),
-        new THREE.MeshBasicMaterial({ map: texture }),
+        new THREE.MeshStandardMaterial({ map: texture, roughness: 1 }),
         x,
         -440,
         136,

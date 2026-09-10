@@ -54,7 +54,7 @@ test('real audio buffers decode and ambience never stacks or runs while hidden/m
       return context.decodeAudioData(await response.arrayBuffer());
     };
     const [city, room] = await Promise.all([
-      decode('/audio/atmosphere/apartment-city.wav'),
+      decode('/audio/atmosphere/nyc-apartment.m4a'),
       decode('/audio/atmosphere/apartment-room.wav'),
     ]);
     let created = 0;
@@ -70,12 +70,13 @@ test('real audio buffers decode and ambience never stacks or runs while hidden/m
     };
     const audio = new (window as any).ApartmentAudio.default(manager);
     const emit = (name: string, detail?: boolean) => document.dispatchEvent(new CustomEvent(name, { detail }));
-    emit('loadingScreenDone');
-    emit('loadingScreenDone');
+    emit('doorOpening');
+    emit('doorOpening');
+    emit('loadingScreenDone'); // Camera arrival must not start another loop.
     const initial = created;
     emit('muteToggle', true);
     const muted = !audio.city.isPlaying && !audio.room.isPlaying;
-    emit('loadingScreenDone');
+    emit('doorOpening');
     const mutedCount = created;
     emit('muteToggle', false);
     const resumed = audio.city.isPlaying && audio.room.isPlaying;
@@ -86,19 +87,19 @@ test('real audio buffers decode and ambience never stacks or runs while hidden/m
     emit('visibilitychange');
     emit('doorClosed');
     const left = !audio.city.isPlaying && !audio.room.isPlaying;
-    emit('loadingScreenDone');
+    emit('doorOpening');
     const reentered = audio.city.isPlaying && audio.room.isPlaying;
     audio.destroy();
     const destroyed = !audio.city.isPlaying && !audio.room.isPlaying;
     const before = created;
-    emit('loadingScreenDone');
+    emit('doorOpening');
     emit('muteToggle', false);
     emit('visibilitychange');
     await context.close();
     delete (document as any).hidden;
     return { durations: [city.duration, room.duration], initial, muted, mutedCount, resumed, hidden, left, reentered, destroyed, afterDestroy: created - before };
   });
-  expect(result.durations[0]).toBeCloseTo(20, 1);
+  expect(result.durations[0]).toBeCloseTo(300, 0);
   expect(result.durations[1]).toBeCloseTo(14, 1);
   expect(result.initial).toBe(2);
   expect(result.mutedCount).toBe(2);

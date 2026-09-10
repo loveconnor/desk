@@ -1,15 +1,15 @@
 import { assetLoadingManager } from "../Utils/assetLoading";
 import * as THREE from "three";
 import { RoundedBoxGeometry } from "three/examples/jsm/geometries/RoundedBoxGeometry.js";
-import { MONITOR as M, monitorSag } from "./monitorLayout";
+import { MONITOR as M } from "./monitorLayout";
 
 /** Original geometry based on Dell's S3222DGM outline and product photographs.
- * The curved shell surrounds a recessed flat aperture for the live CSS3D desktop.
+ * The front aperture is flat so the live CSS3D desktop stays sharp to the bezel.
  */
 export default class DellMonitor extends THREE.Group {
   constructor() {
     super();
-    this.name = "Dell S3222DGM — 32 inch, 1800R";
+    this.name = "Dell 32 inch monitor — native browser display";
     const plastic = new THREE.MeshStandardMaterial({
       color: new THREE.Color("#292a2d").convertSRGBToLinear(),
       roughness: 0.72,
@@ -102,8 +102,7 @@ export default class DellMonitor extends THREE.Group {
       [outside, false],
       [inside, false],
     ] as const)
-      for (const p of points)
-        positions.push(p.x, p.y, monitorSag(p.x) + (front ? 2 : -25));
+      for (const p of points) positions.push(p.x, p.y, front ? 2 : -25);
     const strip = (a: number, b: number, reverse = false) => {
       for (let i = 0; i < n; i++) {
         const j = (i + 1) % n;
@@ -134,13 +133,13 @@ export default class DellMonitor extends THREE.Group {
     bezelFaces.computeVertexNormals();
     bezel.dispose();
     add("Continuous slim rounded bezel", bezelFaces, plastic, 0, 0, M.z);
-    // Thin panel edge follows the same curve on both faces. Only the central
-    // electronics/stand area thickens; curvature is not added to edge thickness.
+    // Keep the entire enclosure behind the flat display. The shaped rear shell
+    // retains depth without crossing the browser plane near the sides.
     const centerY = (M.top + bottom) / 2;
     const rearZ = (x: number, y: number) => {
       const horizontal = Math.max(0, 1 - (x / (M.width / 2)) ** 2);
       const vertical = Math.sin(Math.PI * (y / M.height + 0.5));
-      return monitorSag(x) - 25 - 60 * horizontal ** 2 * vertical ** 2;
+      return -25 - 60 * horizontal ** 2 * vertical ** 2;
     };
     const back = new THREE.BoxGeometry(
       M.width - 14,
@@ -152,12 +151,9 @@ export default class DellMonitor extends THREE.Group {
     );
     const p = back.attributes.position;
     for (let i = 0; i < p.count; i++)
-      p.setZ(
-        i,
-        p.getZ(i) > 0 ? monitorSag(p.getX(i)) - 3 : rearZ(p.getX(i), p.getY(i)),
-      );
+      p.setZ(i, p.getZ(i) > 0 ? -3 : rearZ(p.getX(i), p.getY(i)));
     back.computeVertexNormals();
-    add("Curved rear enclosure", back, plastic, 0, centerY, M.z);
+    add("Shaped rear enclosure", back, plastic, 0, centerY, M.z);
     for (let row = 0; row < 18; row++) {
       const y = bottom + 40 + row * 27;
       const vent = new THREE.PlaneGeometry(850 - row * 29, 5, 32, 1);
@@ -235,7 +231,7 @@ export default class DellMonitor extends THREE.Group {
       2,
       M.width / 2 - 39,
       bottom + 10,
-      M.z + monitorSag(M.width / 2 - 39) + 4,
+      M.z + 4,
       new THREE.MeshStandardMaterial({
         color: 0xd8dfed,
         emissive: 0x687888,

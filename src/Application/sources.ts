@@ -1,5 +1,6 @@
 const sources: Resource[] = [
   { name: "doorOpen", type: "audio", path: "audio/door/open.mp3" },
+  { name: "doorClose", type: "audio", path: "audio/door/close.wav" },
   {
     name: "monitorSmudgeTexture",
     type: "texture",
@@ -53,7 +54,7 @@ const sources: Resource[] = [
   {
     name: "apartmentCity",
     type: "audio",
-    path: "audio/atmosphere/apartment-city.wav",
+    path: "audio/atmosphere/nyc-apartment.m4a",
   },
   {
     name: "apartmentRoom",

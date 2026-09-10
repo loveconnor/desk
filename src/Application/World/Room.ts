@@ -115,11 +115,28 @@ export default class Room {
         );
       }
     }
-    // Back wall is built around a real opening for the window.
-    this.box(9350, 7830, 140, -8325, 1585, -2100, plaster);
-    this.box(5650, 7830, 140, 1275, 1585, -2100, plaster);
-    this.box(2100, 2300, 140, -2600, -1180, -2100, plaster);
-    this.box(2100, 3330, 140, -2600, 3835, -2100, plaster);
+    // One continuous plaster surface avoids beveled seams above/below the window.
+    const wall = new THREE.Shape();
+    wall.moveTo(-13000, -2330);
+    wall.lineTo(4100, -2330);
+    wall.lineTo(4100, 5500);
+    wall.lineTo(-13000, 5500);
+    wall.closePath();
+    const opening = new THREE.Path();
+    opening.moveTo(-3650, -30);
+    opening.lineTo(-3650, 2170);
+    opening.lineTo(-1550, 2170);
+    opening.lineTo(-1550, -30);
+    opening.closePath();
+    wall.holes.push(opening);
+    const backWall = new THREE.Mesh(
+      new THREE.ExtrudeGeometry(wall, { depth: 140, bevelEnabled: false }),
+      plaster,
+    );
+    backWall.position.z = -2170;
+    backWall.castShadow = true;
+    backWall.receiveShadow = true;
+    this.group.add(backWall);
     this.box(140, 7830, 18225, 4100, 1585, 7022.5, sage);
     this.box(17100, 120, 45, -4450, -2250, -2005, trim);
     this.box(45, 120, 18225, 4005, -2250, 7022.5, trim);
@@ -300,7 +317,7 @@ export default class Room {
                   : undefined;
             const mesh = new THREE.Mesh(
               jacketGeometry(width, height, 4, side),
-              map ? new THREE.MeshBasicMaterial({ map }) : binding,
+              map ? new THREE.MeshStandardMaterial({ map, roughness: 1 }) : binding,
             );
             mesh.position.z = (side === "front" ? 1 : -1) * (thickness / 2 - 2);
             mesh.castShadow = true;
@@ -346,7 +363,7 @@ export default class Room {
             : spine;
           const label = new THREE.Mesh(
             jacketGeometry(4, height, thickness, "spine"),
-            new THREE.MeshBasicMaterial({ map: spineMap }),
+            new THREE.MeshStandardMaterial({ map: spineMap, roughness: 1 }),
           );
           label.position.x = -width / 2 + 1;
           label.castShadow = true;

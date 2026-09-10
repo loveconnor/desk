@@ -8,6 +8,8 @@ export default class ApartmentLighting {
     private desk: PersonalDesk,
     private room: Room,
   ) {
+    this.ceiling("Office ceiling light", -1200, 1400, 5250, 500, 1.15);
+    this.ceiling("Back-left ceiling light", -10300, 1400, 5250, 640, 1.15);
     this.ceiling("Kitchen ceiling light", -10300, 6300, 5250, 640, 1.7);
     this.ceiling("Living room pendant", -1200, 10600, 3500, 740, 1.45);
     this.ceiling("Dining pendant", -10200, 12600, 2800, 440, 1.15);
