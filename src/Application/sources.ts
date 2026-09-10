@@ -54,7 +54,7 @@ const sources: Resource[] = [
   {
     name: "apartmentCity",
     type: "audio",
-    path: "audio/atmosphere/nyc-apartment.m4a",
+    path: "audio/atmosphere/nyc-loft.m4a",
   },
   {
     name: "apartmentRoom",

@@ -5,23 +5,32 @@ test('boots into the 3D scene and opens the local desktop inside the monitor', a
   page.on('pageerror', e => errors.push(e.message));
   page.on('response', r => { if (r.status() >= 400) errors.push(`${r.status()} ${r.url()}`); });
   await page.goto('/');
-  await expect(page.getByRole('button', { name: 'START', exact: true })).toBeVisible();
-  // The BIOS dialog fades in only after all scene resources have loaded.
-  await page.waitForTimeout(2500);
-  await page.getByRole('button', { name: 'START', exact: true }).click();
-  await expect(page.getByText('Click anywhere to begin', { exact: true })).toBeVisible({ timeout: 15000 });
-  await page.waitForTimeout(3000);
+  const start = page.getByRole('button', { name: 'START', exact: true });
+  await expect(start).toBeEnabled({ timeout: 60000 });
+  await start.click();
+  await expect(page.locator('.door-entry')).toHaveClass(/is-finished/, { timeout: 15000 });
+  await expect(page.getByRole('link', { name: 'Open desktop', exact: true })).toBeVisible();
   await page.screenshot({ path: 'test-results/scene.png' });
-  await page.mouse.click(450, 700);
-  await page.waitForTimeout(2200);
-  await page.mouse.move(720, 430);
-  await page.waitForTimeout(2500);
+  // Click the visible desk surface at the configured 1440 × 1000 viewport.
+  await page.mouse.click(600, 520);
+  const monitor = page.locator('#computer-screen');
+  await expect.poll(async () => (await monitor.boundingBox())?.width ?? 0).toBeGreaterThan(300);
+  // Wait for the desk camera to settle before hovering: it ignores monitor
+  // entry while a camera transition is already in progress.
+  let previousTransform = '';
+  let stableSamples = 0;
+  await expect.poll(async () => {
+    const transform = await monitor.evaluate(element => element.parentElement!.style.transform);
+    stableSamples = transform === previousTransform ? stableSamples + 1 : 0;
+    previousTransform = transform;
+    return stableSamples;
+  }, { timeout: 10000, intervals: [250] }).toBeGreaterThanOrEqual(2);
+  await monitor.hover();
+  await expect.poll(async () => (await monitor.boundingBox())?.width ?? 0).toBeGreaterThan(800);
   const desktop = page.frameLocator('#computer-screen');
   await desktop.getByRole('button', { name: 'About Connor', exact: true }).first().click();
   await expect(desktop.getByRole('dialog', { name: 'About Connor' })).toBeVisible();
   await expect(desktop.locator('.portrait')).toHaveJSProperty('complete', true);
-  await page.mouse.move(730, 450);
-  await page.waitForTimeout(500);
   await page.screenshot({ path: 'test-results/monitor.png' });
   expect(errors).toEqual([]);
 });

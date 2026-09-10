@@ -386,25 +386,46 @@ export default class PersonalDesk {
       },
       true,
     );
-    // A scarlet ceramic coffee mug replaces the bottle on the left.
-    const ceramic = this.material(0x9b2924);
-    this.cylinder(105, 175, -1430, 100, 390, ceramic, 105);
-    this.cylinder(89, 5, -1430, 190, 390, this.material(0x28150e));
-    const rim = this.mesh(
-      new THREE.TorusGeometry(98, 7, 8, 32),
-      ceramic,
-      -1430,
-      190,
-      390,
-    );
-    rim.rotation.x = Math.PI / 2;
-    this.mesh(
-      new THREE.TorusGeometry(64, 16, 10, 28),
-      ceramic,
-      -1550,
-      105,
-      390,
-    );
+    const mug = new THREE.Group();
+    mug.name = "Glazed ceramic mug and coffee";
+    mug.position.set(-1430, 12, 390);
+    this.group.add(mug);
+    const ceramic = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color(0x9b2924).convertSRGBToLinear(),
+      roughness: 0.23,
+      clearcoat: 0.65,
+      clearcoatRoughness: 0.16,
+    });
+    // Closed cross-section: rounded foot, tapered wall, rolled lip, inner cavity.
+    const profile = [
+      [0, 0], [68, 0], [80, 2], [88, 8], [91, 18],
+      [94, 55], [100, 140], [103, 173], [102, 181],
+      [99, 185], [95, 185], [92, 181], [92, 174],
+      [89, 140], [83, 55], [80, 24], [73, 18], [0, 18],
+    ].map(([r, y]) => new THREE.Vector2(r, y));
+    this.mesh(new THREE.LatheGeometry(profile, 96), ceramic, 0, 0, 0, mug);
+    const handle = new THREE.CatmullRomCurve3([
+      new THREE.Vector3(-94, 148, 0), new THREE.Vector3(-144, 154, 0),
+      new THREE.Vector3(-169, 120, 0), new THREE.Vector3(-168, 76, 0),
+      new THREE.Vector3(-142, 42, 0), new THREE.Vector3(-91, 40, 0),
+    ]);
+    this.mesh(new THREE.TubeGeometry(handle, 48, 14, 12, false), ceramic, 0, 0, 0, mug);
+    const coffee = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color(0x26130a).convertSRGBToLinear(),
+      roughness: 0.16,
+      metalness: 0,
+      clearcoat: 1,
+      clearcoatRoughness: 0.08,
+    });
+    const liquid = this.mesh(new THREE.CircleGeometry(90, 96), coffee, 0, 162, 0, mug);
+    liquid.rotation.x = -Math.PI / 2;
+    liquid.castShadow = false;
+    // Curved meniscus meets the inner wall below the lip.
+    this.mesh(new THREE.LatheGeometry([
+      new THREE.Vector2(86, 162), new THREE.Vector2(88, 162.3),
+      new THREE.Vector2(90, 163), new THREE.Vector2(91, 165),
+    ], 96), coffee, 0, 0, 0, mug).castShadow = false;
+
   }
 
   mxMasterMouse() {

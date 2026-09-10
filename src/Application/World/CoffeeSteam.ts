@@ -45,21 +45,23 @@ export default class CoffeeSteam {
     });
 
     this.model.mesh = new THREE.Mesh(
-      new THREE.PlaneGeometry(230, 630),
+      new THREE.PlaneGeometry(240, 480).translate(0, 240, 0),
       this.model.material,
     );
 
-    this.model.mesh.position.copy(new THREE.Vector3(-1430, 505, 390 + DESK_WALL_OFFSET_Z));
+    this.model.mesh.position.copy(new THREE.Vector3(-1430, 180, 390 + DESK_WALL_OFFSET_Z));
 
     this.scene.add(this.model.mesh);
   }
 
   update() {
     this.model.mesh.position.y =
-      505 + this.application.world.computerSetup.lift.height;
+      180 + this.application.world.computerSetup.lift.height;
     this.model.material.uniforms.uTime.value = this.time.elapsed;
-    this.model.mesh.quaternion.copy(
-      this.application.camera.instance.quaternion,
+    const camera = this.application.camera.instance.position;
+    this.model.mesh.rotation.y = Math.atan2(
+      camera.x - this.model.mesh.position.x,
+      camera.z - this.model.mesh.position.z,
     );
   }
 }

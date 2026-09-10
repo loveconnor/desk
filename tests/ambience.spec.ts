@@ -54,7 +54,7 @@ test('real audio buffers decode and ambience never stacks or runs while hidden/m
       return context.decodeAudioData(await response.arrayBuffer());
     };
     const [city, room] = await Promise.all([
-      decode('/audio/atmosphere/nyc-apartment.m4a'),
+      decode('/audio/atmosphere/nyc-loft.m4a'),
       decode('/audio/atmosphere/apartment-room.wav'),
     ]);
     let created = 0;
@@ -99,7 +99,7 @@ test('real audio buffers decode and ambience never stacks or runs while hidden/m
     delete (document as any).hidden;
     return { durations: [city.duration, room.duration], initial, muted, mutedCount, resumed, hidden, left, reentered, destroyed, afterDestroy: created - before };
   });
-  expect(result.durations[0]).toBeCloseTo(300, 0);
+  expect(result.durations[0]).toBeCloseTo(118, 0);
   expect(result.durations[1]).toBeCloseTo(14, 1);
   expect(result.initial).toBe(2);
   expect(result.mutedCount).toBe(2);

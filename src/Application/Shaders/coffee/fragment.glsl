@@ -43,16 +43,17 @@ float perlin2d(vec2 P) {
 }
 
 void main() {
-  vec2 uv = vUv * uUvFrequency;
-  uv.y -= uTime * uTimeFrequency;
-
-  float borderAlpha = min(vUv.x * 4.0, (1.0 - vUv.x) * 4.0);
-  borderAlpha = borderAlpha * (1.0 - vUv.y);
-
-  float perlin = perlin2d(uv);
-  perlin *= borderAlpha;
-  perlin *= 0.6;
-  perlin = min(perlin, 1.0);
-
-  gl_FragColor = vec4(uColor, perlin);
+  float t = uTime * 0.00035;
+  float height = vUv.y;
+  float drift = sin(height * 7.0 - t * 1.3) * height * 0.15;
+  drift += perlin2d(vec2(height * 3.0, t * 0.6)) * height * 0.12;
+  float x = vUv.x - 0.5 - drift;
+  float width = 0.065 + height * 0.17;
+  float plume = exp(-pow(x / width, 2.0) * 2.0);
+  float curls = perlin2d(vec2(x * 12.0 + t * 0.3, height * 6.0 - t));
+  float detail = perlin2d(vec2(x * 25.0, height * 12.0 - t * 1.6));
+  float density = smoothstep(-0.35, 0.6, curls + detail * 0.3);
+  float ends = smoothstep(0.0, 0.1, height) * (1.0 - smoothstep(0.4, 1.0, height));
+  float alpha = plume * density * ends * 0.18;
+  gl_FragColor = vec4(uColor, alpha);
 }
