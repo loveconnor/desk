@@ -194,6 +194,11 @@ br {
   pointer-events: auto;
 }
 .room-controls .portfolio-control { min-height: 44px; padding: 12px 20px; }
+.room-hover-hint { position: fixed; z-index: 110; pointer-events: none; box-sizing: border-box; max-width: 244px; padding: 9px 13px; border: 1px solid #d3c7b0; border-radius: 8px; background: #f2ecdf; color: #293b34; box-shadow: 0 3px 14px #101e2326; font: 500 13px/1.4 "Love Sans", sans-serif; }
+.room-hover-hint span { margin-left: 10px; }
+.room-navigation { position: fixed; top: 18px; left: 22px; z-index: 100; display: flex; gap: 8px; max-width: calc(100vw - 44px); flex-wrap: wrap; pointer-events: auto; }
+.room-navigation .portfolio-control { min-height: 44px; }
+.room-navigation button:disabled, .room-controls button:disabled { opacity: .5; cursor: default; }
 @media (max-width: 600px) {
   .room-controls { left: 12px; bottom: 76px; }
 }

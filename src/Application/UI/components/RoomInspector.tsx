@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { RoomDetail } from "../../World/RoomInteractions";
 import UIEventBus from "../EventBus";
+import ProjectView from "./ProjectView";
+import { projectStories } from "../content/projects";
 export default function RoomInspector() {
   const [detail, setDetail] = useState<RoomDetail | null>(null);
   useEffect(() => {
@@ -13,6 +15,10 @@ export default function RoomInspector() {
       document.removeEventListener("roomObjectReturned", hide);
     };
   }, []);
+  const project = projectStories.find(
+    (project) => project.slug === detail?.projectSlug,
+  );
+  if (project) return <ProjectView key={project.slug} project={project} />;
   return detail ? (
     <div
       className="object-in-hand"
@@ -22,8 +28,21 @@ export default function RoomInspector() {
       {detail.showDescription && (
         <details className="artwork-context">
           <summary>
-            <svg className="artwork-context-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-              <path d="m9 5 7 7-7 7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            <svg
+              className="artwork-context-chevron"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="m9 5 7 7-7 7"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
             {detail.title} · {detail.subtitle} — Design context
           </summary>

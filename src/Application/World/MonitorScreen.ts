@@ -31,10 +31,7 @@ export default class MonitorScreen extends EventEmitter {
   position: THREE.Vector3;
   rotation: THREE.Euler;
   camera: Camera;
-  prevInComputer: boolean;
-  shouldLeaveMonitor: boolean;
   inComputer: boolean;
-  mouseClickInProgress: boolean;
   dimmingPlane: THREE.Mesh;
   videoTextures: { [key in string]: THREE.VideoTexture };
   private entryButton: HTMLButtonElement;
@@ -55,8 +52,6 @@ export default class MonitorScreen extends EventEmitter {
     );
     this.rotation = new THREE.Euler(0, 0, 0);
     this.videoTextures = {};
-    this.mouseClickInProgress = false;
-    this.shouldLeaveMonitor = false;
 
     // Create screen
     this.initializeScreenEvents();
@@ -79,76 +74,13 @@ export default class MonitorScreen extends EventEmitter {
   }
 
   initializeScreenEvents() {
-    document.addEventListener(
-      "mousemove",
-      (event) => {
-        // @ts-ignore
-        const id = event.target.id;
-        if (id === "computer-screen") {
-          // @ts-ignore
-          event.inComputer = true;
-        }
-
-        // @ts-ignore
-        this.inComputer = event.inComputer;
-
-        if (this.inComputer && !this.prevInComputer) {
-          this.camera.trigger("enterMonitor");
-        }
-
-        if (
-          !this.inComputer &&
-          this.prevInComputer &&
-          !this.mouseClickInProgress
-        ) {
-          this.camera.trigger("leftMonitor");
-        }
-
-        if (
-          !this.inComputer &&
-          this.mouseClickInProgress &&
-          this.prevInComputer
-        ) {
-          this.shouldLeaveMonitor = true;
-        } else {
-          this.shouldLeaveMonitor = false;
-        }
-
-        this.application.mouse.trigger("mousemove", [event]);
-
-        this.prevInComputer = this.inComputer;
-      },
-      false,
-    );
-    document.addEventListener(
-      "mousedown",
-      (event) => {
-        // @ts-ignore
-        this.inComputer = event.inComputer;
-        this.application.mouse.trigger("mousedown", [event]);
-
-        this.mouseClickInProgress = true;
-        this.prevInComputer = this.inComputer;
-      },
-      false,
-    );
-    document.addEventListener(
-      "mouseup",
-      (event) => {
-        // @ts-ignore
-        this.inComputer = event.inComputer;
-        this.application.mouse.trigger("mouseup", [event]);
-
-        if (this.shouldLeaveMonitor) {
-          this.camera.trigger("leftMonitor");
-          this.shouldLeaveMonitor = false;
-        }
-
-        this.mouseClickInProgress = false;
-        this.prevInComputer = this.inComputer;
-      },
-      false,
-    );
+    // Forward desktop input without letting pointer entry/exit move the camera.
+    for (const type of ["mousemove", "mousedown", "mouseup"]) {
+      document.addEventListener(type, (event: MouseEvent & { inComputer?: boolean }) => {
+        this.inComputer = !!event.inComputer || (event.target as HTMLElement).id === "computer-screen";
+        this.application.mouse.trigger(type, [event]);
+      });
+    }
   }
 
   /**
@@ -241,7 +173,7 @@ export default class MonitorScreen extends EventEmitter {
     const entry = document.createElement("button");
     entry.type = "button";
     entry.setAttribute("aria-label", "Use computer");
-    entry.title = "Use computer";
+    entry.dataset.roomHint = "Use computer";
     Object.assign(entry.style, {
       position: "absolute", inset: "0", width: "100%", height: "100%",
       border: "0", padding: "0", background: "transparent", cursor: "pointer",

@@ -5,6 +5,7 @@ import RoomControls from "./components/RoomControls";
 import RoomInspector from "./components/RoomInspector";
 import LoadingScreen from "./components/LoadingScreen";
 import HelpPrompt from "./components/HelpPrompt";
+import RoomHoverHint from "./components/RoomHoverHint";
 import InterfaceUI from "./components/InterfaceUI";
 import eventBus from "./EventBus";
 import "./style.css";
@@ -25,6 +26,7 @@ const App = () => {
       {!loading && (
         <>
           <HelpPrompt />
+          <RoomHoverHint />
           <Documents />
           <RoomInspector />
           <ScreenBarControls />

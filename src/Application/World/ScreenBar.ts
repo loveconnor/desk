@@ -46,6 +46,7 @@ export default class ScreenBar {
 
   constructor(private desk: PersonalDesk) {
     this.group.name = "BenQ ScreenBar — tap to adjust";
+    this.group.userData.hoverLabel = "Adjust desk light";
     this.group.position.set(0, MONITOR.top + 46, MONITOR.z + 55);
     desk.group.add(this.group);
     try {

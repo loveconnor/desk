@@ -86,6 +86,7 @@ export default class RoomWindow {
   ) {
     this.group.name =
       "Blackout blinds — drag to lower, click to close or reopen";
+    this.group.userData.hoverLabel = "Adjust blinds";
     room.group.add(this.group);
     desk.app.scene.add(this.outside);
     this.outside.name = "NYC skyline with depth and exterior window trim";

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import * as THREE from "three";
 import Application from "../../Application";
 
-const HELP_TEXT = "Click the desk to move closer";
+const HELP_TEXT = "Click the monitor, notes, or books";
 
 /** A temporary floor projection in the clear space in front of the desk. */
 export default function HelpPrompt() {

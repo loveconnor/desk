@@ -89,8 +89,6 @@ export default class Camera extends EventEmitter {
       if (blocked(event)) return;
       if (this.currentKeyframe === CameraKey.IDLE && this.hitsDesk(event))
         press = { x: event.clientX, y: event.clientY, view: CameraKey.IDLE };
-      else if (this.currentKeyframe === CameraKey.DESK)
-        press = { x: event.clientX, y: event.clientY, view: CameraKey.DESK };
     });
     document.addEventListener("mouseup", (event) => {
       const start = press;
@@ -98,7 +96,7 @@ export default class Camera extends EventEmitter {
       if (!start || blocked(event) || this.currentKeyframe !== start.view ||
           Math.hypot(event.clientX - start.x, event.clientY - start.y) > 6 ||
           (start.view === CameraKey.IDLE && !this.hitsDesk(event))) return;
-      this.transition(start.view === CameraKey.IDLE ? CameraKey.DESK : CameraKey.IDLE);
+      this.transition(CameraKey.DESK);
     });
     window.addEventListener("blur", () => { press = null; });
     document.addEventListener("pointercancel", () => { press = null; });
@@ -117,7 +115,8 @@ export default class Camera extends EventEmitter {
     });
     this.setPostLoadTransition();
     this.setInstance();
-    this.setMonitorListeners();
+    document.addEventListener("cameraNavigation", (event: CustomEvent) => this.navigate(event.detail));
+    document.addEventListener("cameraNavigationRequest", () => this.publishNavigation(true));
     this.setFreeCamListeners();
   }
 
@@ -167,6 +166,7 @@ export default class Camera extends EventEmitter {
     this.currentKeyframe = undefined;
     this.targetKeyframe = key;
 
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) duration = 1;
     const keyframe = this.keyframes[key];
 
     const posTween = new TWEEN.Tween(this.position)
@@ -201,17 +201,32 @@ export default class Camera extends EventEmitter {
     this.scene.add(this.instance);
   }
 
-  setMonitorListeners() {
-    this.on("enterMonitor", () => {
-      if (this.currentKeyframe !== CameraKey.DESK || this.targetKeyframe || this.freeCam) return;
-      this.transition(CameraKey.MONITOR, 2000, BezierEasing(0.13, 0.99, 0, 1));
-      UIEventBus.dispatch("enterMonitor", {});
-    });
-    this.on("leftMonitor", () => {
-      if (this.currentKeyframe !== CameraKey.MONITOR && this.targetKeyframe !== CameraKey.MONITOR) return;
-      this.transition(CameraKey.DESK);
+  private navigationKey = "";
+
+  private publishNavigation(force = false) {
+    const state = {
+      view: this.targetKeyframe || this.currentKeyframe,
+      busy: !!this.targetKeyframe || this.doorwayBusy || this.inspectionActive || this.paperActive,
+      entered: this.roomEntered,
+      exploring: this.freeCam,
+    };
+    const key = JSON.stringify(state);
+    if (!force && key === this.navigationKey) return;
+    this.navigationKey = key;
+    UIEventBus.dispatch("cameraNavigationState", state);
+  }
+
+  private navigate(action: string) {
+    if (!this.roomEntered || this.doorwayBusy || this.targetKeyframe || this.inspectionActive || this.paperActive) return;
+    if (action === "computer") this.openMonitor();
+    else if (action === "room" && this.freeCam) UIEventBus.dispatch("freeCamToggle", false);
+    else if (!this.freeCam && (
+      (action === "back" && this.currentKeyframe === CameraKey.MONITOR) ||
+      (action === "room" && (this.currentKeyframe === CameraKey.MONITOR || this.currentKeyframe === CameraKey.DESK))
+    )) {
+      this.transition(action === "back" ? CameraKey.DESK : CameraKey.IDLE);
       UIEventBus.dispatch("leftMonitor", {});
-    });
+    }
   }
 
   openMonitor() {
@@ -348,6 +363,7 @@ export default class Camera extends EventEmitter {
   }
 
   update() {
+    this.publishNavigation();
     if (this.paperActive || this.inspectionActive) return;
     if (this.pendingApproach && this.application.world.computerSetup.chairModel.position.x <= -1400) {
       const start = this.pendingApproach;

@@ -10,6 +10,7 @@ export interface RoomDetail {
   showDescription?: boolean;
   image?: string;
   href?: string;
+  projectSlug?: string;
 }
 export default class RoomInteractions {
   targets = new Map<THREE.Object3D, { label: string; action: () => void }>();
@@ -137,6 +138,7 @@ export default class RoomInteractions {
     width = 470,
     height = 470,
   ) {
+    object.userData.hoverLabel ??= `Inspect ${detail.title}`;
     this.add(object, detail.title, () => {
       if (this.held || !object.parent) return;
       object.traverse((child) => {
@@ -235,7 +237,11 @@ export default class RoomInteractions {
       UIEventBus.dispatch("roomObjectReturned", {});
     });
   }
-  private hit(x: number, y: number) {
+  hoverLabel(x: number, y: number) {
+    const object = this.hit(x, y, true);
+    return object ? object.userData.hoverLabel || this.targets.get(object)?.label || "" : "";
+  }
+  private hit(x: number, y: number, hover = false) {
     const camera = this.app.camera;
     if (
       !this.enabled ||
@@ -254,14 +260,16 @@ export default class RoomInteractions {
     // Test the nearest visible surface, so objects cannot be clicked through furniture.
     const hit = this.ray
       .intersectObjects(this.app.scene.children, true)
-      .find(
-        (h) =>
-          h.object instanceof THREE.Mesh &&
-          (h.object.material as THREE.Material).visible !== false,
-      );
+      .find(({ object }) => {
+        if (!(object instanceof THREE.Mesh)) return false;
+        for (let ancestor: THREE.Object3D | null = object; ancestor; ancestor = ancestor.parent)
+          if (!ancestor.visible) return false;
+        const materials = Array.isArray(object.material) ? object.material : [object.material];
+        return materials.some(material => material.visible && (!material.transparent || material.opacity > 0));
+      });
     let object: THREE.Object3D | null = hit?.object || null;
     while (object) {
-      if (this.targets.has(object)) return object;
+      if (this.targets.has(object) || (hover && object.userData.hoverLabel)) return object;
       object = object.parent;
     }
     return null;

@@ -15,6 +15,7 @@ export const roomNotes = [
   ...profile.projects.map((p, i) => ({
     title: p.name,
     subtitle: "PROJECT",
+    projectSlug: p.slug,
     body: [
       "A React component library with editable source code. Copy components into your project and make them your own. Includes interface controls, charts, icons, and optional visual effects.",
       "A color workbench for designers and developers. Build palettes, create light and dark themes, check contrast, and export CSS, Tailwind, or design tokens. Saved palettes stay in your browser.",

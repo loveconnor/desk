@@ -371,6 +371,7 @@ export default class Room {
           label.position.x = -width / 2 + 1;
           label.castShadow = true;
           volume.add(label);
+          volume.userData.hoverLabel = "Browse books";
           this.interactions.pickup(
             volume,
             {
@@ -411,6 +412,10 @@ export default class Room {
     board.rotation.y = -Math.PI / 2;
     this.group.add(board);
     notes.forEach((note, index) => {
+      note.userData.hoverLabel = roomNotes[index].subtitle === "PROJECT"
+        ? `Explore ${roomNotes[index].title}`
+        : roomNotes[index].subtitle === "ABOUT ME" ? "About Connor"
+        : roomNotes[index].subtitle === "TOOLKIT" ? "View toolkit" : "Get in touch";
       this.interactions.pickup(note, roomNotes[index], 635, 590);
     });
 

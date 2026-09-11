@@ -74,9 +74,9 @@ export class MonitorKeyframe extends CameraKeyframeInstance {
     const aspect = this.sizes.height / this.sizes.width;
     this.targetPos.z =
       Math.max(MONITOR.screenHeight, MONITOR.screenWidth * aspect) /
-        (2 * Math.tan(THREE.MathUtils.degToRad(17.5))) -
-      260 +
-      180 +
+        (2 * Math.tan(THREE.MathUtils.degToRad(17.5))) +
+      // Leave space above the display for explicit navigation controls.
+      220 +
       DESK_WALL_OFFSET_Z;
     this.position.copy(this.targetPos);
     this.position.y += this.application.world?.computerSetup?.lift?.height ?? 0;

@@ -264,6 +264,7 @@ export default class PersonalDesk {
     });
     const paper = this.mesh(physics.geometry, this.resumeMaterial, 1330, 3, 440);
     paper.name = "Clickable résumé";
+    paper.userData.hoverLabel = "Read résumé";
     paper.rotation.set(-Math.PI / 2, 0, -0.12);
     // Keep the same physical sheet through pickup, reading, and return.
     const restingPosition = paper.position.clone();
