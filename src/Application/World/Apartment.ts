@@ -217,12 +217,11 @@ export default class Apartment {
       g.add(light, light.target);
       return light;
     });
-    let stripOn = true;
-    this.room.interactions.add(diffuser, "Toggle kitchen task lighting", () => {
-      stripOn = !stripOn;
+    const toggleStrip = this.room.lights.register("kitchen-task", "Kitchen task lights", (stripOn) => {
       strip.emissiveIntensity = stripOn ? 0.65 : 0;
       taskLights.forEach((light) => (light.intensity = stripOn ? 0.9 : 0));
     });
+    this.room.interactions.add(diffuser, "Toggle kitchen task lighting", toggleStrip);
   }
 
   private dining() {
@@ -343,12 +342,11 @@ export default class Apartment {
     tableLight.name = "Living room table lamp illumination";
     tableLight.position.set(-2300, -620, -2580);
     g.add(tableLight);
-    let lampOn = true;
-    this.room.interactions.add(shade, "Toggle living room table lamp", () => {
-      lampOn = !lampOn;
+    const toggleLamp = this.room.lights.register("living-table", "Living room table lamp", (lampOn) => {
       tableLight.intensity = lampOn ? 0.85 : 0;
       shadeMaterial.emissiveIntensity = lampOn ? 0.18 : 0;
     });
+    this.room.interactions.add(shade, "Toggle living room table lamp", toggleLamp);
     this.room.plant(3210, -2305, 13750);
   }
 }

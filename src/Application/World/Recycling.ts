@@ -218,5 +218,11 @@ export function createRecycling(renderer: THREE.WebGLRenderer) {
   bin.add(body);
   ring(bin, 261, 6, 504, metal).receiveShadow = false;
   ring(bin, 225, 4, 14, metal).receiveShadow = false;
-  return { bin, can };
+  const reflected = [silver, ink, metal];
+  const reflectionLevels = reflected.map(material => material.envMapIntensity);
+  return { bin, can, setLighting: (level: number) => {
+    reflected.forEach((material, i) => {
+      material.envMapIntensity = reflectionLevels[i] * THREE.MathUtils.clamp(level, 0, 1);
+    });
+  } };
 }

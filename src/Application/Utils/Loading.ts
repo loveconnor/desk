@@ -41,8 +41,10 @@ export default class Loading {
       pending = toLoad - loaded;
       if (this.ready || this.failed) return;
       this.watchProgress();
-      // Reserve completion for the fully assembled room, including canvas work.
-      this.progress = Math.min(0.99, loaded / toLoad);
+      // Room construction discovers more assets, so the total can grow between
+      // callbacks. Keep displayed progress monotonic and reserve completion for
+      // the fully assembled room, including canvas work.
+      this.progress = Math.max(this.progress, Math.min(0.99, loaded / toLoad));
       UIEventBus.dispatch("loadedSource", {
         sourceName,
         progress: this.progress,

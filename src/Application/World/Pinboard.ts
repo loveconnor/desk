@@ -92,30 +92,42 @@ function noteTexture(note: Note, index: number) {
       ctx.fillStyle = `rgba(98,80,56,${rand() * 0.025})`;
       ctx.fillRect(rand() * 768, rand() * 768, 1, 1);
     }
-    ctx.fillStyle = "#8b6550";
-    ctx.font = "500 24px Arial";
-    ctx.fillText(note.subtitle, 48, 100);
-    ctx.fillStyle = "#293b35";
-    ctx.font = "48px Georgia";
-    ctx.fillText(note.title, 48, 165, 672);
-    ctx.fillStyle = "#c6b9a2";
-    ctx.fillRect(48, 194, 672, 1.5);
-    ctx.fillStyle = "#455049";
-    ctx.font = "31px Arial";
-    let y = 248;
+    ctx.fillStyle = "#343d35";
+    ctx.font = "bold 44px Arial";
+    ctx.fillText(note.subtitle, 36, 100);
+    // The title is the room-view label; reserve fine print for close inspection.
+    // Wrap at word boundaries instead of squeezing a long title into one line.
+    ctx.fillStyle = "#101e18";
+    ctx.font = "bold 144px Arial";
+    const titleLines: string[] = [];
+    let titleLine = "";
+    for (const word of note.title.split(/\s+/)) {
+      const candidate = titleLine ? `${titleLine} ${word}` : word;
+      if (titleLine && ctx.measureText(candidate).width > 696) {
+        titleLines.push(titleLine);
+        titleLine = word;
+      } else titleLine = candidate;
+    }
+    if (titleLine) titleLines.push(titleLine);
+    titleLines.forEach((line, i) => ctx.fillText(line, 36, 270 + i * 152, 696));
+    const ruleY = 310 + (titleLines.length - 1) * 152;
+    ctx.fillRect(36, ruleY, 696, 5);
+    ctx.fillStyle = "#26342b";
+    ctx.font = "29px Arial";
+    let y = ruleY + 54;
     for (const paragraph of note.body.split(/\n/)) {
       let line = "";
       for (const word of paragraph.split(/\s+/)) {
-        if (line && ctx.measureText(line + word).width > 668) {
-          ctx.fillText(line.trim(), 48, y);
-          y += 39;
+        if (line && ctx.measureText(line + word).width > 696) {
+          ctx.fillText(line.trim(), 36, y);
+          y += 35;
           line = "";
         }
         line += word + " ";
       }
       if (line) {
-        ctx.fillText(line.trim(), 48, y);
-        y += 45;
+        ctx.fillText(line.trim(), 36, y);
+        y += 39;
       }
     }
   });
@@ -225,8 +237,8 @@ export function createPinboard(contents: Note[]) {
   contents.slice(0, 6).forEach((content, i) => {
     const x = -715 + (i % 3) * 715,
       y = i < 3 ? 337 : -327,
-      w = 505,
-      h = [494, 505, 488, 510, 496, 500][i];
+      w = 635,
+      h = 590;
     const note = new THREE.Group();
     note.position.set(x, y, 23);
     note.rotation.z = rotations[i];

@@ -214,6 +214,14 @@ export default class Camera extends EventEmitter {
     });
   }
 
+  openMonitor() {
+    if (!this.roomEntered || this.doorwayBusy || this.targetKeyframe ||
+        this.freeCam || this.inspectionActive || this.paperActive ||
+        (this.currentKeyframe !== CameraKey.IDLE && this.currentKeyframe !== CameraKey.DESK)) return;
+    this.transition(CameraKey.MONITOR, 1400);
+    UIEventBus.dispatch("enterMonitor", {});
+  }
+
   setFreeCamListeners() {
     UIEventBus.on("freeCamToggle", (toggle: boolean) => {
       // if (toggle === this.freeCam) return;

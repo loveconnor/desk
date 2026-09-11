@@ -11,8 +11,8 @@ test('ScreenBar controls change the lamp, leave auto mode, and retain settings',
   const start = page.getByRole('button', { name: 'START', exact: true });
   await expect(start).toBeEnabled({ timeout: 60000 });
   await start.click();
-  await page.getByRole('button', { name: 'Desk light', exact: true }).click({ timeout: 30000 });
-  const controls = page.getByRole('region', { name: 'BenQ ScreenBar controls' });
+  await page.getByRole('button', { name: 'Lights', exact: true }).click({ timeout: 30000 });
+  const controls = page.getByRole('region', { name: 'Lights', exact: true });
   await expect(controls).toBeVisible();
   const brightness = page.getByRole('slider', { name: 'ScreenBar brightness' });
   const temperature = page.getByRole('slider', { name: 'ScreenBar color temperature' });
@@ -40,7 +40,7 @@ test('ScreenBar controls change the lamp, leave auto mode, and retain settings',
   await page.reload();
   await expect(start).toBeEnabled({ timeout: 60000 });
   await start.click();
-  await page.getByRole('button', { name: 'Desk light', exact: true }).click({ timeout: 30000 });
+  await page.getByRole('button', { name: 'Lights', exact: true }).click({ timeout: 30000 });
   await expect(brightness).toHaveValue('3');
   await expect(temperature).toHaveValue('7');
   expect(errors).toEqual([]);

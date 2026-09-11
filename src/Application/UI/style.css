@@ -200,7 +200,8 @@ br {
 
 .screenbar-panel {
   position: fixed; right: 24px; bottom: 82px; z-index: 30;
-  width: min(250px, calc(100vw - 32px)); box-sizing: border-box;
+  width: min(320px, calc(100vw - 32px)); box-sizing: border-box;
+  max-height: calc(100dvh - 160px); overflow-y: auto; overscroll-behavior: contain;
   padding: 16px; border-radius: 12px; border: 1px solid #d3c7b0;
   background: #f2ecdf; color: #293b34; box-shadow: 0 8px 30px #101e2326;
   font: 13px/1.4 -apple-system, BlinkMacSystemFont, sans-serif;
@@ -218,4 +219,14 @@ br {
 .screenbar-panel :disabled { opacity: .45; cursor: default; }
 .screenbar-panel :focus-visible { outline: 2px solid #916c3e; outline-offset: 3px; }
 .screenbar-scale { display: flex; justify-content: space-between; color: #798071; font-size: 10px; }
+.lights-desk { border-top: 1px solid #d3c7b0; padding-top: 12px; }
+.lights-desk summary { display: flex; align-items: center; justify-content: space-between; cursor: pointer; font-weight: 600; margin-bottom: 12px; min-height: 36px; list-style: none; }
+.lights-desk summary::-webkit-details-marker { display: none; }
+.lights-chevron { flex-shrink: 0; transition: transform 180ms ease; }
+.lights-desk[open] .lights-chevron { transform: rotate(90deg); }
+@media (prefers-reduced-motion: reduce) { .lights-chevron { transition: none; } }
+.lights-section-title { margin: 18px 0 6px; padding-top: 14px; border-top: 1px solid #d3c7b0; color: #293b34; font: 600 13px/1.4 -apple-system, BlinkMacSystemFont, sans-serif; }
+.lights-fixture { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 7px 0; }
+.lights-fixture button { flex-shrink: 0; min-width: 52px; }
+.lights-fixture button[aria-checked=true] { background: #354c41; color: #fffaf0; border-color: #354c41; }
 @media (max-width: 600px) { .screenbar-panel { right: 16px; bottom: 140px; } }

@@ -26,7 +26,7 @@ export default class PersonalDesk {
   desktop = new THREE.Group();
   lift: StandingDesk;
   screenBar: ScreenBar;
-  private resumeMaterial: THREE.MeshBasicMaterial;
+  private resumeMaterial: THREE.MeshStandardMaterial;
   private readerAmbient = NaN;
   columns: THREE.Mesh[] = [];
   chairModel = new THREE.Group();
@@ -255,11 +255,11 @@ export default class PersonalDesk {
     texture.anisotropy =
       this.app.renderer.instance.capabilities.getMaxAnisotropy();
     const physics = new PaperPhysics();
-    // Keep ink contrast independent of direct lights. Bounded ambient tinting
-    // below matches the reader without letting the ScreenBar bleach the print.
-    this.resumeMaterial = new THREE.MeshBasicMaterial({
+    // The physical sheet receives the same illumination as the desk beneath it.
+    // The enlarged document reader retains its own accessible contrast.
+    this.resumeMaterial = new THREE.MeshStandardMaterial({
       map: texture,
-      toneMapped: false,
+      roughness: 1,
       side: THREE.DoubleSide,
     });
     const paper = this.mesh(physics.geometry, this.resumeMaterial, 1330, 3, 440);
@@ -660,11 +660,6 @@ export default class PersonalDesk {
     this.screenBar.update();
     const ambient = THREE.MathUtils.clamp(
       this.daylight.intensity + (this.app.world?.room?.lampOn ? 0.14 : 0), 0, 1,
-    );
-    this.resumeMaterial.color.setRGB(
-      0.72 + ambient * 0.28,
-      0.69 + ambient * 0.31,
-      0.64 + ambient * 0.36,
     );
     // Carry the room's warmth into the enlarged reader without sacrificing
     // document contrast in the darkest environment.

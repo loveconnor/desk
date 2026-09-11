@@ -325,7 +325,7 @@ export default class RoomWindow {
     const sample = this.dateOverride
       ? date.getTime()
       : Math.floor(date.getTime() / 1000);
-    const lightingKey = `${sample}:${this.coverage}:${this.room.lampOn}:${this.basics.size}:${this.city.ready}`;
+    const lightingKey = `${sample}:${this.coverage}:${this.room.lampOn}:${this.room.lights.revision}:${this.basics.size}:${this.city.ready}`;
     if (
       Math.abs(before - this.coverage) > 0.0001 ||
       Math.floor(now / 15000) !== Math.floor((now - dt * 1000) / 15000)
@@ -348,11 +348,13 @@ export default class RoomWindow {
     this.daylight = THREE.MathUtils.smoothstep(altitude, -7, 35);
     const transmission = Math.pow(1 - this.coverage, 1.7);
     const light = this.daylight * transmission;
-    // Keep closed-blind ambient fill low; fixtures provide their own local light.
+    // Preserve nighttime detail with indirect indoor fill. The sky and direct
+    // sunlight still follow the real sun; closing blinds in daylight stays dark.
+    const nightFill = (1 - this.daylight) * 0.09 * this.room.lights.indoorFill;
     const reflected = this.room.lampOn ? 0.018 : 0.004;
     const slatLeak = this.daylight * (1 - transmission) * 0.004;
     this.desk.daylight.intensity =
-      0.012 + light * 0.156 + (1 - light) * reflected + slatLeak;
+      0.012 + nightFill + light * 0.156 + (1 - light) * reflected + slatLeak;
     // Cast through the real opening. The frame, sill, blinds and furniture
     // occlude this light on every receiving surface, including the woven rug.
     // Also attenuate the room's directional source by the exposed aperture.
@@ -370,7 +372,9 @@ export default class RoomWindow {
       .addScaledVector(sun.direction, 22000);
     this.desk.app.renderer.instance.shadowMap.needsUpdate = true;
     this.light.intensity = light * 0.9;
-    this.bounce.intensity = this.room.lampOn ? 0.03 : 0;
+    this.bounce.intensity = this.room.lampOn
+      ? 0.03 + (1 - this.daylight) * 0.05
+      : 0;
     this.night.value = 1 - this.daylight;
     this.exteriorMaterials.forEach((material, i) =>
       material.color

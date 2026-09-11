@@ -4,6 +4,7 @@ import Room from "./Room";
 
 /** Light belongs to a visible fitting, with limited reach and an operable switch. */
 export default class ApartmentLighting {
+  private ceilingFixtures: Array<{ mesh: THREE.Object3D; apply: (on: boolean) => void }> = [];
   constructor(
     private desk: PersonalDesk,
     private room: Room,
@@ -13,6 +14,12 @@ export default class ApartmentLighting {
     this.ceiling("Kitchen ceiling light", -10300, 6300, 5250, 640, 1.7);
     this.ceiling("Living room pendant", -1200, 10600, 3500, 740, 1.45);
     this.ceiling("Dining pendant", -10200, 12600, 2800, 440, 1.15);
+    const toggleCeiling = this.room.lights.register("ceiling", "Ceiling lights", (on) => {
+      this.ceilingFixtures.forEach(fixture => fixture.apply(on));
+    });
+    this.ceilingFixtures.forEach(({ mesh }) => {
+      this.room.interactions.add(mesh, "Toggle ceiling lights", toggleCeiling);
+    });
     this.printer();
   }
   private fitting(name: string) {
@@ -87,7 +94,7 @@ export default class ApartmentLighting {
     const spill = new THREE.PointLight(0xffdfb5, power * 0.2, 7500, 2);
     spill.position.set(0, y - 110, 0);
     g.add(spill);
-    this.switch(diffuser, name, [light, spill], [opal]);
+    this.switch(diffuser, name, [light, spill], [opal], true);
   }
   private printer() {
     const g = this.fitting("Printer task sconce");
@@ -124,15 +131,20 @@ export default class ApartmentLighting {
     name: string,
     lights: THREE.Light[],
     materials: THREE.MeshStandardMaterial[],
+    ceiling = false,
   ) {
-    let on = true;
     const levels = lights.map((l) => l.intensity),
       emission = materials.map((m) => m.emissiveIntensity);
-    this.room.interactions.add(mesh, `Toggle ${name.toLowerCase()}`, () => {
-      on = !on;
+    const apply = (on: boolean) => {
       lights.forEach((l, i) => (l.intensity = on ? levels[i] : 0));
       materials.forEach((m, i) => (m.emissiveIntensity = on ? emission[i] : 0));
       this.desk.app.renderer.instance.shadowMap.needsUpdate = true;
-    });
+    };
+    if (ceiling) {
+      this.ceilingFixtures.push({ mesh, apply });
+      return;
+    }
+    const toggle = this.room.lights.register(name, name, apply);
+    this.room.interactions.add(mesh, `Toggle ${name.toLowerCase()}`, toggle);
   }
 }

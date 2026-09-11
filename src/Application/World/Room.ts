@@ -9,6 +9,7 @@ import { clockHandAngles } from "./clockTime";
 import Apartment from "./Apartment";
 import PrinterStation from "./PrinterStation";
 import ApartmentLighting from "./ApartmentLighting";
+import LightControls from "./LightControls";
 import { bookArtwork } from "./bookArtwork";
 import { loadBookTexture } from "./bookTexture";
 import { jacketGeometry } from "./bookBinding";
@@ -25,7 +26,9 @@ export default class Room {
   clockHands: THREE.Group[] = [];
   roomWindow!: RoomWindow;
   lampOn = true;
+  lights = new LightControls();
   lampLight!: THREE.PointLight;
+  private updateRecyclingLighting?: (level: number) => void;
   constructor(private desk: PersonalDesk) {
     this.interactions = new RoomInteractions(desk.app);
     this.group.name = "Connor's room — first pass";
@@ -392,11 +395,12 @@ export default class Room {
     lamp.group.position.set(3580, -2305, 2070);
     this.group.add(lamp.group);
     this.lampLight = lamp.light;
-    this.interactions.add(lamp.shade, "Toggle reading lamp", () => {
-      this.lampOn = !this.lampOn;
-      lamp.setOn(this.lampOn);
+    const toggleReadingLamp = this.lights.register("reading", "Reading lamp", (on) => {
+      this.lampOn = on;
+      lamp.setOn(on);
       this.desk.app.renderer.instance.shadowMap.needsUpdate = true;
     });
+    this.interactions.add(lamp.shade, "Toggle reading lamp", toggleReadingLamp);
 
     const readingTable = createReadingTable();
     readingTable.position.set(3000, -2300, 4720);
@@ -407,7 +411,7 @@ export default class Room {
     board.rotation.y = -Math.PI / 2;
     this.group.add(board);
     notes.forEach((note, index) => {
-      this.interactions.pickup(note, roomNotes[index], 505, 510);
+      this.interactions.pickup(note, roomNotes[index], 635, 590);
     });
 
     // A clock above the bookcase and a basket by the desk complete the room.
@@ -532,6 +536,7 @@ export default class Room {
       680,
     );
     const recycling = createRecycling(this.desk.app.renderer.instance);
+    this.updateRecyclingLighting = recycling.setLighting;
     recycling.bin.position.set(-2110, -2305, -570);
     this.group.add(recycling.bin);
     for (let i = 0; i < 7; i++) {
@@ -565,6 +570,10 @@ export default class Room {
 
   update() {
     this.roomWindow?.update();
+    // The metal's studio reflection must fade with the actual room illumination.
+    this.updateRecyclingLighting?.(
+      Math.max(0, this.desk.daylight.intensity - 0.016) * 4 + this.lights.indoorFill * 0.5,
+    );
     clockHandAngles(new Date()).forEach((angle, i) => {
       if (this.clockHands[i]) this.clockHands[i].rotation.z = angle;
     });

@@ -7,7 +7,7 @@ import Application from "../Application";
 import Debug from "../Utils/Debug";
 import Resources from "../Utils/Resources";
 import Sizes from "../Utils/Sizes";
-import Camera from "../Camera/Camera";
+import Camera, { CameraKey } from "../Camera/Camera";
 import EventEmitter from "../Utils/EventEmitter";
 
 const SCREEN_SIZE = { w: MONITOR.screenWidth, h: MONITOR.screenHeight };
@@ -37,6 +37,7 @@ export default class MonitorScreen extends EventEmitter {
   mouseClickInProgress: boolean;
   dimmingPlane: THREE.Mesh;
   videoTextures: { [key in string]: THREE.VideoTexture };
+  private entryButton: HTMLButtonElement;
 
   constructor() {
     super();
@@ -63,6 +64,18 @@ export default class MonitorScreen extends EventEmitter {
     const maxOffset = this.createTextureLayers();
     // The bezel and native browser surface share one flat aperture.
     this.createPerspectiveDimmer(maxOffset);
+    this.createScreenGlow();
+  }
+
+  private createScreenGlow() {
+    // A broad, soft source spills forward from the display onto the workspace.
+    // Limited range keeps it off the far walls and floor without another shadow map.
+    const glow = new THREE.SpotLight(0xc5ddff, 0.9, 3000, 1.1, 1, 2);
+    glow.name = "Monitor screen glow";
+    glow.position.copy(this.position).add(new THREE.Vector3(0, 0, 70));
+    glow.target.position.copy(this.position).add(new THREE.Vector3(0, -1000, 1100));
+    this.scene.add(glow, glow.target);
+    this.movingSurfaces.push(glow, glow.target);
   }
 
   initializeScreenEvents() {
@@ -148,6 +161,7 @@ export default class MonitorScreen extends EventEmitter {
     container.style.height = this.screenSize.height + "px";
     container.style.opacity = "1";
     container.style.background = "#1d2e2f";
+    container.style.position = "relative";
 
     // Create iframe
     const iframe = document.createElement("iframe");
@@ -220,6 +234,21 @@ export default class MonitorScreen extends EventEmitter {
 
     // Add iframe to container
     container.appendChild(iframe);
+
+    // The distant iframe used to consume clicks before the room camera could
+    // respond. A projected button owns the first click, then yields to the live
+    // desktop once the approach finishes. It also supports touch and keyboard.
+    const entry = document.createElement("button");
+    entry.type = "button";
+    entry.setAttribute("aria-label", "Use computer");
+    entry.title = "Use computer";
+    Object.assign(entry.style, {
+      position: "absolute", inset: "0", width: "100%", height: "100%",
+      border: "0", padding: "0", background: "transparent", cursor: "pointer",
+    });
+    entry.addEventListener("click", () => this.camera.openMonitor());
+    container.appendChild(entry);
+    this.entryButton = entry;
 
     // Create CSS plane
     this.createCssPlane(container);
@@ -488,6 +517,9 @@ export default class MonitorScreen extends EventEmitter {
   }
 
   update() {
+    this.entryButton.hidden = this.camera.currentKeyframe === CameraKey.MONITOR;
+    this.entryButton.disabled = !!this.camera.targetKeyframe ||
+      (this.camera.currentKeyframe !== CameraKey.IDLE && this.camera.currentKeyframe !== CameraKey.DESK);
     const height = this.application.world.computerSetup.lift.height;
     const delta = height - this.appliedHeight;
     for (const surface of this.movingSurfaces) surface.position.y += delta;

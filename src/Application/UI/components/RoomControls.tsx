@@ -24,7 +24,7 @@ export default function RoomControls({ hidden }: { hidden: boolean }) {
       {exploring ? "Room overview" : "Look around"}
     </button>
     <button className="portfolio-control" data-desk-ui onClick={() => UIEventBus.dispatch("screenbarRequest", {})}>
-      Desk light
+      Lights
     </button>
   </nav>;
 }

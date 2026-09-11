@@ -157,6 +157,8 @@ export default class Hallway {
       this.group,
     );
     button.rotation.x = Math.PI / 2;
+    const sconces: Array<{ light: THREE.Light; intensity: number }> = [];
+    const shades: THREE.MeshStandardMaterial[] = [];
     for (const x of [-9100, -4000]) {
       box(195, 610, 36, x, 1040, 16298, brass);
       for (const y of [770, 1310]) screw(desk, this.group, x, y, 16320, brass);
@@ -179,6 +181,7 @@ export default class Hallway {
         envMap: brass.envMap,
         envMapIntensity: 0.35,
       });
+      shades.push(shade);
       const geometry = new THREE.CylinderGeometry(113, 113, 465, 128, 1, true);
       const positions = geometry.attributes.position;
       for (let i = 0; i < positions.count; i++) {
@@ -231,7 +234,13 @@ export default class Hallway {
       contact.shadow.normalBias = 6;
       contact.shadow.radius = 4;
       this.group.add(contact, contact.target);
+      sconces.push({ light, intensity: light.intensity }, { light: contact, intensity: contact.intensity });
     }
+    desk.app.world.room.lights.register("hallway", "Hallway lights", (on) => {
+      sconces.forEach(({ light, intensity }) => { light.intensity = on ? intensity : 0; });
+      shades.forEach(shade => { shade.emissiveIntensity = on ? 1.7 : 0; });
+      desk.app.renderer.instance.shadowMap.needsUpdate = true;
+    });
     // Neighboring doors anchor the corridor's scale.
     for (const x of [-11100, -1500]) {
       // A recessed leaf sits inside three solid jambs, with a narrow reveal.
