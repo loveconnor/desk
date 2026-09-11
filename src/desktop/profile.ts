@@ -1,3 +1,42 @@
+// Based on connorlove.com/about, linkedin.com/in/loveconnor,
+// github.com/loveconnor/lovechat, and github.com/HappyCoderHackathons/prismo.
+export const skillGroups = [
+  {
+    title: "Frontend",
+    items: ["React", "Next.js", "TypeScript", "Angular", "TanStack Start"],
+  },
+  {
+    title: "Backend & data",
+    items: [
+      "Node.js / Fastify",
+      "Python / Flask",
+      "PostgreSQL",
+      "Redis",
+      "AI integration",
+    ],
+  },
+  {
+    title: "Design & interaction",
+    items: [
+      "Three.js",
+      "GSAP animation",
+      "UX design",
+      "Design systems",
+      "Component libraries",
+    ],
+  },
+  {
+    title: "Quality & delivery",
+    items: [
+      "Web performance",
+      "Accessibility",
+      "Software testing",
+      "Technical SEO",
+      "Docker",
+    ],
+  },
+];
+
 // Personal content lives here; the desktop and the 3D scene run independently.
 export const profile = {
   name: "Connor Love",
@@ -9,18 +48,7 @@ export const profile = {
   twitter: "https://x.com/connorlove_dev",
   calendar: "https://cal.com/loveconnor",
   website: "https://www.connorlove.com",
-  skills: [
-    "React",
-    "Next.js",
-    "TypeScript",
-    "JavaScript",
-    "Three.js",
-    "HTML & CSS",
-    "Interaction design",
-    "Web performance",
-    "Accessibility",
-    "Design systems",
-  ],
+  skills: skillGroups.flatMap((group) => group.items),
   projects: [
     {
       name: "HonestUI",

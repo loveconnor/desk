@@ -1,4 +1,4 @@
-import { profile } from "../../desktop/profile";
+import { profile, skillGroups } from "../../desktop/profile";
 export const roomNotes = [
   {
     title: profile.name,
@@ -7,9 +7,12 @@ export const roomNotes = [
     lines: ["Freelance web", "developer", "Columbus, Ohio"],
   },
   {
-    title: "What I work with",
+    title: "My toolkit",
     subtitle: "TOOLKIT",
-    body: profile.skills.join(" · "),
+    body: skillGroups
+      .map((group) => `${group.title}: ${group.items.join(", ")}`)
+      .join("\n"),
+    skillGroups,
     lines: ["React · Next.js", "TypeScript", "Three.js"],
   },
   ...profile.projects.map((p, i) => ({

@@ -1,9 +1,20 @@
 import React, { useEffect, useRef } from "react";
 import { ProjectStory } from "../content/projects";
+import { Button } from "./honestui/Button";
 import UIEventBus from "../EventBus";
 
 export default function ProjectView({ project }: { project: ProjectStory }) {
   const dialog = useRef<HTMLDialogElement>(null);
+  const backdropPress = useRef<{ x: number; y: number; id: number } | null>(
+    null,
+  );
+  const outside = (x: number, y: number) => {
+    const rect = dialog.current?.getBoundingClientRect();
+    return (
+      !!rect &&
+      (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom)
+    );
+  };
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
     dialog.current?.showModal();
@@ -19,15 +30,38 @@ export default function ProjectView({ project }: { project: ProjectStory }) {
       className="project-view"
       data-desk-ui
       aria-labelledby="project-title"
+      onPointerDown={(event) => {
+        backdropPress.current =
+          event.button === 0 && outside(event.clientX, event.clientY)
+            ? { x: event.clientX, y: event.clientY, id: event.pointerId }
+            : null;
+      }}
+      onPointerUp={(event) => {
+        const start = backdropPress.current;
+        backdropPress.current = null;
+        if (
+          start &&
+          start.id === event.pointerId &&
+          Math.hypot(event.clientX - start.x, event.clientY - start.y) < 12 &&
+          outside(event.clientX, event.clientY)
+        )
+          close();
+      }}
+      onPointerCancel={() => {
+        backdropPress.current = null;
+      }}
       onCancel={(event) => {
         event.preventDefault();
         close();
       }}
     >
       <div className="project-view-toolbar">
-        <span>From the project board</span>
-        <button
-          type="button"
+        <span>
+          Connor Love <span aria-hidden="true">/</span> Selected work
+        </span>
+        <Button
+          variant="ghost"
+          size="sm"
           autoFocus
           onClick={close}
           aria-label="Close project and return to room"
@@ -47,7 +81,7 @@ export default function ProjectView({ project }: { project: ProjectStory }) {
               strokeLinecap="round"
             />
           </svg>
-        </button>
+        </Button>
       </div>
       <div className="project-view-scroll">
         <header className="project-view-header">
@@ -56,30 +90,34 @@ export default function ProjectView({ project }: { project: ProjectStory }) {
             <h1 id="project-title">{project.name}</h1>
             <p className="project-view-intro">{project.intro}</p>
           </div>
-          <a
-            className="project-view-launch"
-            href={project.url}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {project.action} <span aria-hidden="true">↗</span>
-          </a>
+          <div className="project-view-actions">
+            <Button asChild>
+              <a href={project.url} target="_blank" rel="noreferrer">
+                {project.action} <span aria-hidden="true">↗</span>
+              </a>
+            </Button>
+            <Button variant="outline" asChild>
+              <a href={project.caseStudy} target="_blank" rel="noreferrer">
+                Case study <span aria-hidden="true">↗</span>
+              </a>
+            </Button>
+          </div>
         </header>
-        <figure
-          className={`project-view-image project-view-image-${project.slug}`}
-        >
-          <img
-            src={project.image}
-            alt={project.alt}
-            width="1280"
-            height={project.slug === "honestui" ? 720 : 600}
-          />
-          <figcaption>
-            <span>Product view</span>
-            <span>{new URL(project.url).hostname.replace(/^www\./, "")}</span>
-          </figcaption>
-        </figure>
-        <div className="project-view-story">
+        <div className="project-view-overview">
+          <figure
+            className={`project-view-image project-view-image-${project.slug}`}
+          >
+            <img
+              src={project.image}
+              alt={project.alt}
+              width="1280"
+              height={project.slug === "honestui" ? 720 : 600}
+            />
+            <figcaption>
+              <span>Product view</span>
+              <span>{new URL(project.url).hostname.replace(/^www\./, "")}</span>
+            </figcaption>
+          </figure>
           <section className="project-view-built">
             <h2>What I designed and built</h2>
             <p>{project.built}</p>
@@ -88,18 +126,24 @@ export default function ProjectView({ project }: { project: ProjectStory }) {
               <span>{project.factLabel}</span>
             </div>
           </section>
+        </div>
+        <div className="project-view-story">
           <section>
             <h2>The challenge</h2>
             <p>{project.challenge}</p>
+          </section>
+          <section>
             <h2 className="project-view-solution">How I solved it</h2>
             <p>{project.solution}</p>
           </section>
         </div>
         <footer className="project-view-footer">
           <span>Design & development by Connor Love</span>
-          <a href={project.caseStudy} target="_blank" rel="noreferrer">
-            Full case study <span aria-hidden="true">↗</span>
-          </a>
+          <Button variant="link" size="sm" asChild>
+            <a href={project.caseStudy} target="_blank" rel="noreferrer">
+              Read the full case study <span aria-hidden="true">↗</span>
+            </a>
+          </Button>
         </footer>
       </div>
     </dialog>

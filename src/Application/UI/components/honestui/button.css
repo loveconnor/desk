@@ -1,0 +1,90 @@
+/* HonestUI button variants, ported from registry utility classes to scoped CSS.
+   Accent tokens use the apartment's forest palette. See adjacent LICENSE. */
+.hui-button {
+  --hui-color-background-accent-emphasis: #284b3d;
+  --hui-color-background-accent-emphasis-hover: #34614e;
+  --hui-color-foreground-accent-emphasis: #fffdf7;
+  position: relative;
+  display: inline-flex;
+  width: fit-content;
+  flex-shrink: 0;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  white-space: nowrap;
+  border-radius: 4px;
+  border: 0;
+  padding: 11px 16px;
+  font:
+    500 13px/20px "Love Sans",
+    sans-serif;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  outline: none;
+  background: transparent;
+  color: #263a35;
+  transition:
+    background-color 160ms,
+    box-shadow 160ms,
+    transform 120ms;
+}
+.hui-button[data-variant="default"] {
+  background: var(--hui-color-background-accent-emphasis);
+  color: var(--hui-color-foreground-accent-emphasis);
+  box-shadow: 0 1px 2px #17271e1a;
+}
+.hui-button[data-variant="default"]:hover {
+  background: var(--hui-color-background-accent-emphasis-hover);
+}
+.hui-button[data-variant="outline"] {
+  border: 0.5px solid #80958a;
+  background: #faf9f5;
+  color: #284b3d;
+  box-shadow: 0 1px 2px #17271e0d;
+}
+.hui-button[data-variant="outline"]:hover {
+  background: #e9eee8;
+}
+.hui-button[data-variant="ghost"] {
+  border: 1px dashed #b7c0b7;
+}
+.hui-button[data-variant="ghost"]:hover,
+.hui-button[data-variant="link"]:hover {
+  background: #e8eae2;
+}
+.hui-button[data-size="sm"] {
+  padding: 7px 12px;
+  font-size: 12px;
+  gap: 8px;
+}
+.hui-button:focus-visible {
+  outline: 2px solid #527b63;
+  outline-offset: 3px;
+}
+.hui-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.hui-button:not(:disabled):active {
+  transform: scale(0.97);
+}
+.hui-button svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  pointer-events: none;
+}
+@media (pointer: coarse) {
+  .hui-button {
+    min-height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hui-button {
+    transition: none;
+  }
+  .hui-button:not(:disabled):active {
+    transform: none;
+  }
+}

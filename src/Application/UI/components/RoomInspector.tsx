@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { RoomDetail } from "../../World/RoomInteractions";
 import UIEventBus from "../EventBus";
+import { Button } from "./honestui/Button";
 import ProjectView from "./ProjectView";
 import { projectStories } from "../content/projects";
 export default function RoomInspector() {
@@ -49,22 +50,16 @@ export default function RoomInspector() {
           <p>{detail.body}</p>
         </details>
       )}
-      <span>Drag to turn · Esc to put back</span>
-      <button
-        className="portfolio-control"
-        onClick={() => UIEventBus.dispatch("putBackRoomObject", {})}
-      >
+      <span>Drag to turn · Click outside or Esc to put back</span>
+      <Button onClick={() => UIEventBus.dispatch("putBackRoomObject", {})}>
         Put back ↙
-      </button>
+      </Button>
       {detail.href && (
-        <a
-          className="portfolio-control"
-          href={detail.href}
-          target="_blank"
-          rel="noreferrer"
-        >
-          Read more ↗
-        </a>
+        <Button variant="outline" asChild>
+          <a href={detail.href} target="_blank" rel="noreferrer">
+            Read more ↗
+          </a>
+        </Button>
       )}
     </div>
   ) : null;

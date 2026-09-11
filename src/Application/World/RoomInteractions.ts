@@ -26,6 +26,8 @@ export default class RoomInteractions {
     scale: THREE.Vector3;
   } | null = null;
   private dragX: number | null = null;
+  private outsidePress: { x: number; y: number; pointerId: number } | null =
+    null;
   private angle = 0;
   private pressed: { object: THREE.Object3D; x: number; y: number } | null =
     null;
@@ -54,7 +56,18 @@ export default class RoomInteractions {
       (e) => {
         if ((e.target as HTMLElement).closest?.("[data-desk-ui]")) return;
         if (this.held) {
-          this.dragX = e.clientX;
+          if (e.button !== 0) return;
+          if (this.hitsHeld(e.clientX, e.clientY)) {
+            this.dragX = e.clientX;
+            this.outsidePress = null;
+          } else {
+            this.dragX = null;
+            this.outsidePress = {
+              x: e.clientX,
+              y: e.clientY,
+              pointerId: e.pointerId,
+            };
+          }
           e.preventDefault();
           e.stopImmediatePropagation();
           return;
@@ -70,9 +83,22 @@ export default class RoomInteractions {
     document.addEventListener(
       "pointerup",
       (e) => {
-        if ((e.target as HTMLElement).closest?.("[data-desk-ui]")) return;
-        if (this.held) {
+        if ((e.target as HTMLElement).closest?.("[data-desk-ui]")) {
+          this.outsidePress = null;
           this.dragX = null;
+          return;
+        }
+        if (this.held) {
+          const outside = this.outsidePress;
+          this.outsidePress = null;
+          this.dragX = null;
+          if (
+            outside &&
+            outside.pointerId === e.pointerId &&
+            Math.hypot(e.clientX - outside.x, e.clientY - outside.y) < 12 &&
+            !this.hitsHeld(e.clientX, e.clientY)
+          )
+            this.putBack();
           e.preventDefault();
           e.stopImmediatePropagation();
           return;
@@ -92,6 +118,8 @@ export default class RoomInteractions {
     );
     document.addEventListener("pointercancel", () => {
       this.pressed = null;
+      this.outsidePress = null;
+      this.dragX = null;
     });
     document.addEventListener(
       "mousedown",
@@ -237,9 +265,20 @@ export default class RoomInteractions {
       UIEventBus.dispatch("roomObjectReturned", {});
     });
   }
+  private hitsHeld(x: number, y: number) {
+    if (!this.held) return false;
+    this.held.updateWorldMatrix(true, true);
+    this.ray.setFromCamera(
+      new THREE.Vector2((x / innerWidth) * 2 - 1, (-y / innerHeight) * 2 + 1),
+      this.app.camera.instance,
+    );
+    return this.ray.intersectObject(this.held, true).length > 0;
+  }
   hoverLabel(x: number, y: number) {
     const object = this.hit(x, y, true);
-    return object ? object.userData.hoverLabel || this.targets.get(object)?.label || "" : "";
+    return object
+      ? object.userData.hoverLabel || this.targets.get(object)?.label || ""
+      : "";
   }
   private hit(x: number, y: number, hover = false) {
     const camera = this.app.camera;
@@ -262,14 +301,24 @@ export default class RoomInteractions {
       .intersectObjects(this.app.scene.children, true)
       .find(({ object }) => {
         if (!(object instanceof THREE.Mesh)) return false;
-        for (let ancestor: THREE.Object3D | null = object; ancestor; ancestor = ancestor.parent)
+        for (
+          let ancestor: THREE.Object3D | null = object;
+          ancestor;
+          ancestor = ancestor.parent
+        )
           if (!ancestor.visible) return false;
-        const materials = Array.isArray(object.material) ? object.material : [object.material];
-        return materials.some(material => material.visible && (!material.transparent || material.opacity > 0));
+        const materials = Array.isArray(object.material)
+          ? object.material
+          : [object.material];
+        return materials.some(
+          (material) =>
+            material.visible && (!material.transparent || material.opacity > 0),
+        );
       });
     let object: THREE.Object3D | null = hit?.object || null;
     while (object) {
-      if (this.targets.has(object) || (hover && object.userData.hoverLabel)) return object;
+      if (this.targets.has(object) || (hover && object.userData.hoverLabel))
+        return object;
       object = object.parent;
     }
     return null;

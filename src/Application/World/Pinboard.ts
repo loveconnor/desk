@@ -1,6 +1,11 @@
 import * as THREE from "three";
 
-type Note = { title: string; subtitle: string; body: string };
+type Note = {
+  title: string;
+  subtitle: string;
+  body: string;
+  skillGroups?: { title: string; items: string[] }[];
+};
 const mat = (hex: number, roughness = 0.8) =>
   new THREE.MeshStandardMaterial({
     color: new THREE.Color(hex).convertSRGBToLinear(),
@@ -91,6 +96,30 @@ function noteTexture(note: Note, index: number) {
     for (let i = 0; i < 18000; i++) {
       ctx.fillStyle = `rgba(98,80,56,${rand() * 0.025})`;
       ctx.fillRect(rand() * 768, rand() * 768, 1, 1);
+    }
+    if (note.skillGroups) {
+      // A printed two-column index keeps individual skills readable on the paper.
+      ctx.fillStyle = "#4c5d50";
+      ctx.font = "bold 25px Arial";
+      ctx.fillText("TOOLS & PRACTICE", 44, 82);
+      ctx.fillStyle = "#172c22";
+      ctx.font = "bold 100px Arial";
+      ctx.fillText(note.title, 40, 204);
+      ctx.fillStyle = "#a4ac9a";
+      ctx.fillRect(44, 241, 680, 2);
+      note.skillGroups.forEach((group, i) => {
+        const x = 44 + (i % 2) * 354;
+        const y = 292 + Math.floor(i / 2) * 221;
+        ctx.fillStyle = "#53674f";
+        ctx.font = "bold 23px Arial";
+        ctx.fillText(group.title.toUpperCase(), x, y);
+        ctx.fillStyle = "#24362a";
+        ctx.font = "28px Arial";
+        group.items.forEach((item, row) =>
+          ctx.fillText(item, x, y + 43 + row * 31),
+        );
+      });
+      return;
     }
     ctx.fillStyle = "#343d35";
     ctx.font = "bold 44px Arial";
